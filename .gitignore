@@ -1,0 +1,47 @@
+# Ambiente virtual
+venv/
+.venv/
+env/
+ENV/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Editor/IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos de ambiente
+.env
+.env.*
+
+# Django static e media
+#staticfiles/
+media/
+
+# Banco de dados SQLite (se usar temporariamente)
+*.sqlite3
+db.sqlite3
+
+# Logs
+*.log
+
+# Cobertura de testes
+htmlcov/
+.coverage
+coverage.xml
+
+# Arquivos de Jupyter Notebook
+.ipynb_checkpoints/
+
+# Arquivos SQL de dump (MySQL)
+*.sql
+*.sql.gz

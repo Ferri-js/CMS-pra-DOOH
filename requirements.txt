@@ -1,0 +1,8 @@
+Django>=4.2,<5.0
+django-environ
+gunicorn
+whitenoise
+django-htmx
+mysqlclient
+python-decouple
+ipython
