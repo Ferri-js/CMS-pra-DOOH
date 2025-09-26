@@ -1,4 +1,5 @@
 import webbrowser
+from tipoMidia import tipoFormato
 import mysql.connector as mysql_connector
 from mysql.connector import errorcode
 from datetime import datetime
@@ -26,7 +27,7 @@ class Midia:
         try:
             conn.start_transaction()
 
-            # Cria a tabela (se não existir) já com Titulo
+            # Cria a tabela Midia se não existir (incluindo a coluna Titulo)
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS Midia (
                     Id_Midia INT AUTO_INCREMENT PRIMARY KEY,
@@ -40,36 +41,47 @@ class Midia:
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             """)
 
-            # Garante a coluna Titulo mesmo se a tabela antiga existir sem ela
-            cur.execute("""
-                ALTER TABLE Midia
-                ADD COLUMN IF NOT EXISTS Titulo VARCHAR(255)
-            """)
+            # Verifica se a coluna 'Titulo' existe
+            cur.execute("SHOW COLUMNS FROM Midia LIKE 'Titulo'")
+            result = cur.fetchone()
+            if not result:
+                cur.execute("ALTER TABLE Midia ADD COLUMN Titulo VARCHAR(255)")
 
             url = self.URL
             if not url:
                 raise ValueError("URL é obrigatória para cadastrar a mídia.")
 
-            # Deriva tipo_id (se self.tipo não for int, usa 1)
-            tipo_id = self.tipo if isinstance(self.tipo, int) else 1
+            #✅ Exemplo completo do trecho ajustado:
+            # Determina o tipo_id de forma segura
+            if isinstance(self.tipo, tipoFormato):
+                tipo_id = self.tipo.value  # pega o valor do Enum
+            elif isinstance(self.tipo, int):
+                tipo_id = self.tipo
+            else:
+                raise TypeError("Tipo de mídia deve ser do tipo tipoFormato ou um inteiro correspondente ao ID.")
+
             status = self.status
             duracao = self.duracao
-            data_upload = self.dataUpload if isinstance(self.dataUpload, datetime) else self.dataUpload
+            data_upload = self.dataUpload if isinstance(self.dataUpload, datetime) else datetime.combine(self.dataUpload, datetime.min.time())
             titulo = self.titulo
 
-            # Upsert por URL
+            # Verifica se já existe essa mídia pelo URL
             cur.execute("SELECT Id_Midia FROM Midia WHERE URL = %s", (url,))
             row = cur.fetchone()
 
             if row:
                 midia_id = row[0]
                 cur.execute(
-                    "UPDATE Midia SET Titulo=%s, Tipo_Midia_Id=%s, Status=%s, Duracao=%s, Data_Upload=%s WHERE Id_Midia=%s",
+                    """UPDATE Midia 
+                       SET Titulo=%s, Tipo_Midia_Id=%s, Status=%s, Duracao=%s, Data_Upload=%s 
+                       WHERE Id_Midia=%s""",
                     (titulo, tipo_id, status, duracao, data_upload, midia_id)
                 )
             else:
                 cur.execute(
-                    "INSERT INTO Midia (Titulo, Tipo_Midia_Id, Status, Duracao, Data_Upload, URL) VALUES (%s, %s, %s, %s, %s, %s)",
+                    """INSERT INTO Midia 
+                       (Titulo, Tipo_Midia_Id, Status, Duracao, Data_Upload, URL) 
+                       VALUES (%s, %s, %s, %s, %s, %s)""",
                     (titulo, tipo_id, status, duracao, data_upload, url)
                 )
                 midia_id = cur.lastrowid
@@ -87,10 +99,7 @@ class Midia:
             else:
                 raise
         finally:
-            try:
-                cur.close()
-            except Exception:
-                pass
+            cur.close()
             conn.close()
 
     def exibirMidia(self):
