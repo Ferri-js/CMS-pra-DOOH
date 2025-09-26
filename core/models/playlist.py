@@ -29,7 +29,7 @@ class Playlist:
             "host": "localhost",
             "user": "root",
             "password": "root",
-            "database": "db",  # Certifique-se de que o nome está correto
+            "database": "db", 
         }
 
         conn = mysql_connector.connect(**db_config)
