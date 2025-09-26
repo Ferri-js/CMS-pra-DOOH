@@ -97,3 +97,33 @@ class Midia:
         print(f"ID: {self.id}, Título: {self.titulo}, Tipo: {self.tipo}")
         if self.URL:
             webbrowser.open(self.URL)
+
+    def removerMidia(self):
+        if not self.id:
+            raise ValueError("ID da mídia não definido.")
+
+        db_config = {
+            "host": "localhost",
+            "user": "root",
+            "password": "root",
+            "database": "db",
+        }
+
+        conn = mysql_connector.connect(**db_config)
+        cur = conn.cursor()
+        try:
+            conn.start_transaction()
+            cur.execute("DELETE FROM Midia WHERE Id_Midia = %s", (self.id,))
+            conn.commit()
+            print(f"Mídia com ID {self.id} removida com sucesso.")
+            self.id = None
+        except mysql_connector.Error as err:
+            conn.rollback()
+            print(f"Erro ao remover mídia: {err}")
+            raise
+        finally:
+            try:
+                cur.close()
+            except Exception:
+                pass
+            conn.close()
