@@ -1,0 +1,26 @@
+# Continuação de core/models.py
+
+class Playlist(models.Model):
+    titulo = models.CharField(max_length=100, unique=True)
+    ativa = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return self.titulo
+        
+class ItemPlaylist(models.Model):
+    # Chave estrangeira para o Model Playlist (um Item pertence a uma Playlist)
+    playlist = models.ForeignKey(Playlist, related_name='itens', on_delete=models.CASCADE)
+    
+    # Chave estrangeira para o Model Midia (o Item aponta para um arquivo)
+    midia = models.ForeignKey(Midia, on_delete=models.CASCADE)
+    
+    # Ordem de exibição na playlist
+    ordem = models.PositiveIntegerField() 
+    
+    class Meta:
+        # Garante que não haja dois itens com a mesma ordem na mesma playlist
+        ordering = ['ordem']
+        unique_together = ('playlist', 'ordem')
+        
+    def __str__(self):
+        return f"{self.ordem} - {self.midia.nome}"

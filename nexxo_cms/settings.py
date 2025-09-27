@@ -52,11 +52,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'nexxo_cms.urls'
 
+# settings.py
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
+        'DIRS': [],  # Esta lista pode estar vazia ou ter caminhos de templates de projeto
+        'APP_DIRS': True, # ESTE É O PONTO CRÍTICO!
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
