@@ -3,7 +3,7 @@ from tipoMidia import tipoFormato
 import mysql.connector as mysql_connector
 from mysql.connector import errorcode
 from datetime import datetime
-from midia_playlist import Midia_Playlist
+#from midia_playlist import Midia_Playlist
 
 class Midia:
     def __init__(self, id, titulo, tipo, URL, dataUpload, status, duracao):
