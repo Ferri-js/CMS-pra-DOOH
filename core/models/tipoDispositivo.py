@@ -1,7 +1,7 @@
 from enum import Enum
 
-class tipoDispotivo:
+class TipoDispositivo(Enum):
     MONITOR = 1
     TELEVISOR = 2
-    PROJETO = 3
+    PROJETOR = 3
     VIDEO_WALL = 4

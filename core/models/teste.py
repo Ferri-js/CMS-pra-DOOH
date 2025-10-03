@@ -1,44 +1,80 @@
 from midia import Midia
-from tipoStatus import tipoStatus
 from playlist import Playlist
+#from models.teste import midia_remover
 from datetime import date
 from tipoMidia import tipoFormato
-# Criando objetos de mídia
+from tipoStatus import tipoStatus
+from dispositivo import Dispositivo  # supondo que você salvou a classe em dispositivo.py
+from tipoDispositivo import TipoDispositivo  # enum que você criou
+
 #midia1 = Midia(1, "teste", "Video", "https://www.youtube.com/watch?v=-UUjNRjuyu0", date.today(), tipoStatus.ATIVO, 6)
 #midia2 = Midia(2, "teste2", "Video", "https://www.youtube.com/watch?v=lq_iZNHRnc4", date.today(), "Ativo", 10)
 #midia3 = Midia(3, "teste3", "Foto", "https://tse2.mm.bing.net/th/id/OIP.U4X_DsaMGUaUqHtjMqUMmgHaEK?rs=1&pid=ImgDetMain&o=7&rm=3", date.today(), "Ativo", 0)
 
-# Exemplo de mídia (supondo que 'tipo_midia_id' seja 1)
-
-#elf, id, titulo, tipo, URL, dataUpload, status, duraca
-midia1 = Midia(
-    None,
-    "Vídeo Teste",
-    tipo= tipoFormato.JPEG,
-    URL="abcd",
-    dataUpload=date.today(),
-    status = tipoStatus.ATIVO,
-    duracao=120
-)
-
-# Adicionando atributo tipo_midia_id (obrigatório para FK)
-#midia1.tipo_midia_id =  tipoFormato.MP4
-#midia1.tamanho = None
-#midia1.comprimento = None
-midia1.largura = None
+#midia1 = Midia(
+#    None,
+#    "Vídeo Teste",
+#    tipo= tipoFormato.JPEG,
+#    URL="youtube.com",
+#    dataUpload=date.today(),
+#    status = tipoStatus.ATIVO,
+#    duracao=120
+#)
 
 
-midia_id = midia1.cadastrarMidia()
-print(f"Midia cadastrada com ID: {midia_id}")
+#midia_id = midia1.cadastrarMidia()
+#print(f"Midia cadastrada com ID: {midia_id}")
 
 
 # Criando uma playlist e adicionando mídias
-playlist = Playlist(None, "Minha Playlist Teste")
-playlist.adicionarMidia(midia1)
+#playlist = Playlist(None, "Minha Playlist Teste")
+#playlist.adicionarMidia(midia1)
 
-playlist_id = playlist.cadastrarPlaylist()
-print(f"Playlist cadastrada com ID: {playlist_id}")
+#playlist_id = playlist.cadastrarPlaylist()
+#print(f"Playlist cadastrada com ID: {playlist_id}")
 #play1.adicionarMidia(midia2)
 #play1.adicionarMidia(midia3)
 
+# agora pode usar direto
+#midia1 = Midia(1, "teste", "Video", "https://www.youtube.com/watch?v=-UUjNRjuyu0", date.today(), "Ativo", 6)
+#midia2 = Midia(2, "teste2", "Video", "https://www.youtube.com/watch?v=lq_iZNHRnc4", date.today(), "Ativo", 10)
+#midia3 = Midia(3, "teste3", "Foto", "https://tse2.mm.bing.net/th/id/OIP.U4X_DsaMGUaUqHtjMqUMmgHaEK?rs=1&pid=ImgDetMain&o=7&rm=3", date.today(), "Ativo", 0)
+#midia1.exibirMidia()
 
+
+
+#play1 = Playlist(1, "TesteP")
+
+#play1.adicionarMidia(midia1)
+#play1.adicionarMidia(midia2)
+#play1.adicionarMidia(midia3)
+
+#play1.abrirPlaylist()
+
+
+#midia1.removerMidia();
+
+#midia_remover.removerMidia()
+
+
+# Criação do objeto
+dispositivo = Dispositivo(
+    idDispositivo=100,                     # ID personalizado (pode ser None se for AUTO_INCREMENT)
+    nomeDispositivo="Smart TV Samsung",
+    tipoDispositivo=TipoDispositivo.VIDEO_WALL,
+    armazenamento=128,
+    status="ativo",
+    comprimento=120,
+    largura=70,
+    cod_verificacao="abc123xyz"
+)
+
+# Inserção no banco
+try:
+    dispositivo_id = dispositivo.cadastrarDispositivo()
+    if dispositivo_id:
+        print(f"✅ Dispositivo inserido com ID: {dispositivo_id}")
+    else:
+        print("⚠️ Dispositivo já existe no banco de dados.")
+except Exception as e:
+    print("❌ Erro ao inserir dispositivo:", e)

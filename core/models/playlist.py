@@ -1,6 +1,8 @@
 import mysql.connector as mysql_connector
 from mysql.connector import errorcode
 from datetime import datetime
+from core.models import Midia_Playlist
+
 
 class Playlist:
     def __init__(self, idPlaylist, nomePlaylist):
@@ -19,6 +21,19 @@ class Playlist:
         import mysql.connector as mysql_connector
         from mysql.connector import errorcode
         from datetime import datetime
+
+    def associarPlaylist(self, idMidia, ordem):
+        associacao = Midia_Playlist(
+        idMidiaPlaylist = None,
+        idPlaylist = self.idPlaylist,
+        idMid = idMidia,
+        ordemMidia = ordem
+    )
+        
+        associacao.associar()
+        self.listaMidias.append(idMidia)
+
+
 
         if mysql_connector is None:
             raise RuntimeError(
