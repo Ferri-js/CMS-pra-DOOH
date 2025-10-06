@@ -2,6 +2,8 @@ import webbrowser
 import mysql.connector as mysql_connector
 from mysql.connector import errorcode
 from datetime import datetime
+import requests
+from typing import Optional
 
 class Midia:
     def __init__(self, id, titulo, tipo, URL, dataUpload, status, duracao):
@@ -13,6 +15,34 @@ class Midia:
         self.status = status
         self.duracao = duracao
 
+    def validar_url(self, raw_url: str) -> str:
+
+            if not raw_url:
+                raise ValueError("URL é obrigatória para cadastrar a mídia.")
+
+            try:
+                response = requests.head(raw_url, allow_redirects=True, timeout=10)
+                if response.status_code in {405, 403}:
+                    response.close()
+                    with requests.get(
+                        raw_url, allow_redirects=True, stream=True, timeout=10
+                    ) as get_response:
+                        get_response.raise_for_status()
+                        final_url: Optional[str] = (
+                            get_response.url if get_response.url else raw_url
+                        )
+                else:
+                    response.raise_for_status()
+                    final_url = response.url if response.url else raw_url
+                    response.close()
+            except requests.RequestException as exc:
+                raise ValueError(
+                    "Não foi possível validar o URL informado. "
+                    "Verifique se o link está correto e acessível."
+                ) from exc
+
+            return final_url
+        
     def cadastrarMidia(self):
         db_config = {
             "host": "localhost",
@@ -46,9 +76,8 @@ class Midia:
                 ADD COLUMN IF NOT EXISTS Titulo VARCHAR(255)
             """)
 
-            url = self.URL
-            if not url:
-                raise ValueError("URL é obrigatória para cadastrar a mídia.")
+            url = self.validar_url(self.URL)
+            self.URL = url
 
             # Deriva tipo_id (se self.tipo não for int, usa 1)
             tipo_id = self.tipo if isinstance(self.tipo, int) else 1
