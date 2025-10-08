@@ -1,0 +1,65 @@
+<script>
+    // --- 1. CONFIGURAÇÃO DE DADOS (Junta o Django ao JavaScript) ---
+    const PL_DATA = []; 
+
+    /* INÍCIO DO BLOCO DE INJEÇÃO DJANGO */
+    {% if playlist %}
+        {% for item in playlist.itens.all %}
+            PL_DATA.push({
+                "url": "{{ item.midia.url }}",
+                "tipo": "{{ item.midia.tipo|lower }}",
+                "duracao": "{{ item.midia.duracao|default:5 }}" // Correção de segurança
+            });
+        {% endfor %}
+    {% endif %}
+    /* FIM DO BLOCO DE INJEÇÃO DJANGO */
+
+    // --- 2. LÓGICA DO PLAYER ---
+    let currentIndex = 0;
+    const container = document.getElementById('player-container');
+    
+    function playNext() {
+        if (PL_DATA.length === 0) {
+            container.innerHTML = '<h1>Nenhuma mídia ativa para exibir.</h1>';
+            return;
+        }
+        
+        // Lógica de LOOP
+        if (currentIndex >= PL_DATA.length) {
+            currentIndex = 0;
+        }
+
+        const current = PL_DATA[currentIndex];
+        container.innerHTML = ''; 
+
+        if (current.tipo === 'video') {
+            const video = document.createElement('video');
+            video.src = current.url;
+            video.className = 'media-element';
+            video.autoplay = true;
+            video.controls = false;
+            
+            video.onended = () => { 
+                currentIndex++;
+                playNext();
+            };
+            container.appendChild(video);
+            video.play();
+            
+        } else if (current.tipo === 'imagem') {
+            const image = document.createElement('img');
+            image.src = current.url;
+            image.className = 'media-element';
+            container.appendChild(image);
+            
+            setTimeout(() => {
+                currentIndex++;
+                playNext();
+            // Converte a duração para número (segurança)
+            }, parseFloat(current.duracao) * 1000); 
+        }
+    }
+
+    // Inicia a reprodução
+    playNext();
+</script>
