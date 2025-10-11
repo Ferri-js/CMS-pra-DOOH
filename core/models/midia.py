@@ -1,108 +1,74 @@
 import webbrowser
-from tipoMidia import tipoFormato
+from .tipoMidia import tipoFormato
 import mysql.connector as mysql_connector
 from mysql.connector import errorcode
 from datetime import datetime
+from pathlib import Path
+from pcloud import PyCloud
+import requests
+from django.db import models 
+from django.db import transaction
+from datetime import datetime
 #from midia_playlist import Midia_Playlist
 
-class Midia:
-    def __init__(self, id, titulo, tipo, URL, dataUpload, status, duracao):
-        self.id = id
-        self.titulo = titulo
-        self.tipo = tipo
-        self.URL = URL
-        self.dataUpload = dataUpload
-        self.status = status
-        self.duracao = duracao
 
-    def cadastrarMidia(self):
-        db_config = {
-            "host": "localhost",
-            "user": "root",
-            "password": "root",
-            "database": "db",
-        }
+class Midia(models.Model):
+    id = models.AutoField(db_column='Id_Midia', primary_key=True)
+    titulo = models.CharField(db_column = 'Titulo', max_length=255, null=True, blank=True)
+    tamanho = models.IntegerField(db_column='Tamanho', null=True)
+    tipo_midia = models.ForeignKey(tipoFormato, on_delete=models.CASCADE,db_column='Tipo_Midia_Id')
+    url = models.CharField(db_column='URL', max_length=255, unique=True)
+    status = models.CharField(db_column='Status',max_length=50, null=True)
+    duracao = models.IntegerField(db_column='Duracao', null=True, blank=True)
+    data_upload = models.DateTimeField(db_column='Data_Upload', null=True)
 
-        conn = mysql_connector.connect(**db_config)
-        cur = conn.cursor()
-        try:
-            conn.start_transaction()
 
-            # Cria a tabela Midia se não existir (incluindo a coluna Titulo)
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS Midia (
-                    Id_Midia INT AUTO_INCREMENT PRIMARY KEY,
-                    Titulo VARCHAR(255),
-                    Tipo_Midia_Id INT NOT NULL,
-                    Status VARCHAR(50),
-                    Duracao INT,
-                    Data_Upload DATETIME,
-                    URL TEXT NOT NULL,
-                    UNIQUE KEY uq_midia_url (URL(255))
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-            """)
 
-            # Verifica se a coluna 'Titulo' existe
-            cur.execute("SHOW COLUMNS FROM Midia LIKE 'Titulo'")
-            result = cur.fetchone()
-            if not result:
-                cur.execute("ALTER TABLE Midia ADD COLUMN Titulo VARCHAR(255)")
+    def cadastrarMidia(self):  
+      if not self.url:
+            raise ValueError('URL obrigatório para cadastrar mídia')
+      
+        # Determina tipo_id com segurança
+      if isinstance(self.tipo_midia, tipoFormato):
+            tipo_id = self.tipo_midia.id  # ou .value se for enum — mas aqui é um model
+      elif isinstance(self.tipo_midia, int):
+            tipo_id = self.tipo_midia
+      else:
+           raise TypeError("Tipo de mídia deve ser um tipoFormato ou um inteiro correspondente ao ID.")
 
-            url = self.URL
-            if not url:
-                raise ValueError("URL é obrigatória para cadastrar a mídia.")
-
-            #✅ Exemplo completo do trecho ajustado:
-            # Determina o tipo_id de forma segura
-            if isinstance(self.tipo, tipoFormato):
-                tipo_id = self.tipo.value  # pega o valor do Enum
-            elif isinstance(self.tipo, int):
-                tipo_id = self.tipo
-            else:
-                raise TypeError("Tipo de mídia deve ser do tipo tipoFormato ou um inteiro correspondente ao ID.")
-
-            status = self.status
-            duracao = self.duracao
-            data_upload = self.dataUpload if isinstance(self.dataUpload, datetime) else datetime.combine(self.dataUpload, datetime.min.time())
-            titulo = self.titulo
-
-            # Verifica se já existe essa mídia pelo URL
-            cur.execute("SELECT Id_Midia FROM Midia WHERE URL = %s", (url,))
-            row = cur.fetchone()
-
-            if row:
-                midia_id = row[0]
-                cur.execute(
-                    """UPDATE Midia 
-                       SET Titulo=%s, Tipo_Midia_Id=%s, Status=%s, Duracao=%s, Data_Upload=%s 
-                       WHERE Id_Midia=%s""",
-                    (titulo, tipo_id, status, duracao, data_upload, midia_id)
+      try:
+            with transaction.atomic():
+                midia, created = Midia.objects.get_or_create(
+                    url=self.url,
+                    defaults={
+                        'titulo': self.titulo,
+                        'tipo_midia_id': tipo_id,
+                        'status': self.status,
+                        'duracao': self.duracao,
+                        'data_upload': self.data_upload if isinstance(self.data_upload, datetime) else datetime.combine(self.data_upload, datetime.min.time())
+                    }
                 )
-            else:
-                cur.execute(
-                    """INSERT INTO Midia 
-                       (Titulo, Tipo_Midia_Id, Status, Duracao, Data_Upload, URL) 
-                       VALUES (%s, %s, %s, %s, %s, %s)""",
-                    (titulo, tipo_id, status, duracao, data_upload, url)
-                )
-                midia_id = cur.lastrowid
 
-            conn.commit()
-            self.id = midia_id
-            return midia_id
+                if not created:
+                    # Atualiza os campos se já existir
+                    midia.titulo = self.titulo
+                    midia.tipo_midia_id = tipo_id
+                    midia.status = self.status
+                    midia.duracao = self.duracao
+                    midia.data_upload = self.data_upload if isinstance(self.data_upload, datetime) else datetime.combine(self.data_upload, datetime.min.time())
+                    midia.save()
 
-        except mysql_connector.Error as err:
-            conn.rollback()
-            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                raise RuntimeError("Usuário/senha do MySQL inválidos.") from err
-            elif err.errno == errorcode.ER_BAD_DB_ERROR:
-                raise RuntimeError("Banco de dados não existe.") from err
-            else:
-                raise
-        finally:
-            cur.close()
-            conn.close()
+                self.id = midia.id
+                return midia.id
+      except Exception as e:
+            raise RuntimeError("Erro ao cadastrar ou atualizar mídia.") from e     
+        
+      
+     # None
 
+    class Meta:
+        db_table = 'midia'
+        managed = False  # se a tabela já existe no banco e você não quer que o Django a modifique  
 
     def exibirMidia(self):
         print(f"ID: {self.id}, Título: {self.titulo}, Tipo: {self.tipo}")
@@ -138,3 +104,53 @@ class Midia:
             except Exception:
                 pass
             conn.close()
+
+    def cadastrarMidiaPcloud():
+        pc = PyCloud(username='email@gmail.com', password='senha') 
+
+        if not getattr(pc, "auth_token", None):
+            print("❌ Falha na autenticação.")
+            return
+
+        file_path = Path('C:/Users/danie/Desktop/Django_MediaPlayer/media_player/staticfiles/player/media/img2.jpg')
+
+        upload_response = pc.uploadfile(files=[str(file_path)], folderid=0)
+
+        if 'metadata' in upload_response and upload_response['metadata']:
+            file_metadata = upload_response['metadata'][0]
+            fileid = file_metadata['fileid']
+
+            auth_token = pc.auth_token
+            url = 'https://api.pcloud.com/getfilepublink'
+            params = {
+                'auth': auth_token,
+                'fileid': fileid
+            }
+
+            try:
+                response = requests.get(url, params=params)
+                response.raise_for_status()  # Garante que status != 200 levanta erro
+
+                try:
+                    publish_response = response.json()
+                except ValueError:
+                    print("❌ Resposta não está em JSON:", response.text)
+                    return
+
+                if publish_response.get('result') == 0:
+                    public_url = publish_response.get('link')
+                    print("✅ Upload realizado com sucesso!")
+                    print("Arquivo:", file_metadata.get('name'))
+                    print("Link público:", public_url)
+                else:
+                    print("❌ Erro ao gerar link público.")
+                    print("Resposta:", publish_response)
+
+            except requests.exceptions.RequestException as e:
+                print(f"❌ Erro na requisição: {e}")
+                print("Resposta:", response.text if response else "Nenhuma resposta")
+        else:
+            print("❌ Erro ao fazer upload.")
+            print("Resposta:", upload_response)
+
+            
