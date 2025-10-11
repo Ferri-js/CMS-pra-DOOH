@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <title>Painel de Gerenciamento de Mídia</title>
+    
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    
+    <style>
+        /* Estilos básicos para uma interface limpa e visual */
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background-color: #f7f7f7; }
+        .form-container { background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        h1 { color: #333; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+        h2 { color: #555; margin-top: 0; }
+        /* Estiliza campos gerados pelo {{ form.as_p }} */
+        input[type="text"], input[type="url"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 15px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        /* Opcional: Adiciona espaço abaixo dos parágrafos do formulário */
+        .form-container p { margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <h1>Painel de Gerenciamento de Mídia</h1>
+
+    <div class="form-container">
+        <h2>Adicionar Nova Mídia</h2>
+        <form method="POST" 
+              hx-post="{% url 'gerenciar_midia' %}"           
+              hx-target="#lista-midias"                   
+              hx-swap="outerHTML" 
+              hx-on--after-request="this.reset()"> 
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Salvar Mídia</button>
+        </form>
+    </div>
+
+    <div id="lista-midias">
+        {% include "core/partials/midia_list.html" %}
+    </div>
+
+</body>
+</html>

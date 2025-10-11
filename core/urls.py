@@ -1,10 +1,9 @@
+# core/urls.py
+
 from django.urls import path
-from .views import home
-from core.views.teste_frontend import teste_frontend 
-from core.views.upload_midia import upload_midia
+from . import views # <-- Importa o pacote views (que agora tem um __init__.py corrigido)
 
 urlpatterns = [
-      path('', home, name='home'),
-      path('teste_frontend/', teste_frontend, name='teste_frontend'),
-      path('upload/', upload_midia, name='upload_midia'),
+    path('', views.home, name='home'),
+    path('gerenciar/', views.gerenciar_midia, name='gerenciar_midia'), 
 ]

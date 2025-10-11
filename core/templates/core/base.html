@@ -1,13 +1,32 @@
+<!-- core/templates/core/base.html -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8" />
-    <title>{% block title %}Meu Projeto Django{% endblock %}</title>
-    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <meta charset="UTF-8">
+    <title>{% block title %}CMS DOOH{% endblock %}</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        header, footer { background: #eee; padding: 10px; }
+    </style>
 </head>
 <body>
-    {% block content %}
-    <!-- Conteúdo será inserido aqui pelas outras páginas -->
-    {% endblock %}
+    <header>
+        <h1>NEXXO</h1>
+        <nav>
+            <a href="/">Início</a>
+            <!-- Adicione links de outras páginas aqui -->
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        <!-- Conteúdo das páginas vai aqui -->
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 - Projeto CMS para DOOH</p>
+    </footer>
 </body>
 </html>
+
