@@ -86,16 +86,15 @@ WSGI_APPLICATION = 'nexxo_cms.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-
-        #'default': {
-        #'ENGINE': 'django.db.backends.mysql',
-        #'NAME': 'nome_do_banco',
-        #'USER': 'usuario_mysql',
-        #'PASSWORD': 'sua_senha',
-        #'HOST': 'localhost',
-        #'PORT': '3306',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'db',              # Nome do banco
+        'USER': 'root',            # Usuário do banco
+        'PASSWORD': 'root',        # Senha
+        'HOST': 'localhost',       # Host (ou IP)
+        'PORT': '3306',            # Porta padrão do MySQL
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
 
