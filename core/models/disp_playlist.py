@@ -1,13 +1,21 @@
 import mysql.connector as mysql_connector
 from mysql.connector import errorcode
+from django.db import models
 
-class Dispositivo_Playlist:
-    
-    def __init__(self, idDispPlaylist, idDispositivo, idPlaylist, ordem):
-        self.idDispPlaylist = idDispPlaylist
-        self.idDispositivo = idDispositivo
-        self.idPlaylist = idPlaylist
-        self.ordemPlaylist = ordem
+from .dispositivo import Dispositivo
+from .playlist import Playlist
+
+
+class Dispositivo_Playlist(models.Model):
+    id = models.AutoField(db_column='Id_DispPlaylist', primary_key=True)
+    playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE, db_column='Id_Playlist')
+    dispositivo = models.ForeignKey(Dispositivo, on_delete=models.CASCADE, db_column='Id_Dispositivo')
+    ordem_playlist = models.IntegerField(db_column='Ordem_Playlist', default=0)
+
+    class Meta:
+        db_table = 'dispositivo_playlist'
+        managed = False
+        unique_together = (('playlist', 'dispositivo'),)
 
     def associar(self):
         conexao, cursor = conectarBancoDados()

@@ -1,7 +1,7 @@
 import mysql.connector as mysql_connector
 from mysql.connector import errorcode
 from datetime import datetime
-from core.models import Midia_Playlist
+from midia_playlist import Midia_Playlist
 
 
 class Playlist:
@@ -32,7 +32,6 @@ class Playlist:
         
         associacao.associar()
         self.listaMidias.append(idMidia)
-
 
 
         if mysql_connector is None:

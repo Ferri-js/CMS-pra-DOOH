@@ -1,132 +1,77 @@
 import mysql.connector as mysql_connector
 from mysql.connector import errorcode
-from tipoDispositivo import TipoDispositivo  # Enum esperado
+from tipoDispositivo import TipoDispositivo # Enum esperado
 from disp_playlist import Dispositivo_Playlist
+from django.db import models
+from tipoDispositivo import TipoDispositivo
 
-class Dispositivo:
-    def __init__(self, idDispositivo, nomeDispositivo, tipoDispositivo, armazenamento, status, comprimento, largura, cod_verificacao):
-        self.idDispositivo = idDispositivo
-        self.nomeDispositivo = nomeDispositivo
-        self.tipoDispositivo = tipoDispositivo
-        self.armazenamento = armazenamento
-        self.status = status
-        self.comprimento = comprimento
-        self.largura = largura
-        self.cod_verificacao = cod_verificacao
-        self.playlistAssociada = []
+from django.db import models, transaction
+from .tipoDispositivo import TipoDispositivo
+from .playlist import Playlist
 
-    def reproduzirPlaylist(self):
-        pass
+class Dispositivo(models.Model):
+    id = models.AutoField(db_column='Id_Dispositivo', primary_key=True)
+    tipo_dispositivo = models.ForeignKey(TipoDispositivo, on_delete=models.CASCADE, db_column='Tipo_Dispositivo_Id', null=True)
+    nome = models.CharField(db_column='Nome', max_length=255, null=True, blank=True)
+    codigo_verificacao = models.CharField(db_column='Codigo_Vericacao', max_length=255, null=True, blank=True)
+    comprimento = models.IntegerField(db_column='Comprimento', null=True)
+    largura = models.IntegerField(db_column='Largura', null=True)
+    armazenamento = models.IntegerField(db_column='Armazenamento', null=True)
+    status = models.CharField(db_column='Status', max_length=255, null=True, blank=True)
+    uptime = models.DateTimeField(db_column='Uptime', null=True, blank=True)
+
+    class Meta:
+        db_table = 'dispositivo'
+        managed = False
+
+    def __str__(self):
+        return f"Dispositivo(id={self.id}, nome={self.nome})"
 
     def cadastrarDispositivo(self):
-        conexao, cursor = conectarBancoDados()
+        """Cadastra o dispositivo usando Django ORM.
 
-        try:
-            conexao.start_transaction()
-            verificarTabela(conexao, cursor)
-            
-            if not self.nomeDispositivo:
-                raise TypeError("Nome é obrigatório para cadastrar o dispositivo.")
-            
-            tipoDispId = verificarTipo(self.tipoDispositivo)
-            if tipoDispId == 0:
-                raise TypeError("Tipo de dispositivo não identificado.")
+        Regras baseadas na implementação original:
+        - `nome` é obrigatório para cadastrar
+        - se `id` já existir no banco retorna 0 (não cria)
+        - aceita `tipo_dispositivo` como instância de `TipoDispositivo` ou inteiro id
+        """
+        if not self.nome:
+            raise ValueError('Nome é obrigatório para cadastrar o dispositivo')
 
-            row = verificarIdExistente(self.idDispositivo, cursor)
+        # Determina tipo_id com segurança
+        if isinstance(self.tipo_dispositivo, TipoDispositivo):
+            tipo_id = getattr(self.tipo_dispositivo, 'id', None) or getattr(self.tipo_dispositivo, 'pk', None)
+        elif isinstance(self.tipo_dispositivo, int):
+            tipo_id = self.tipo_dispositivo
+        else:
+            tipo_id = None
 
-            if not row:
-                self.tipoDispositivo = tipoDispId  # substitui enum por int
-                idDisp = self.insertTabela(conexao, cursor)
-            else:
-                idDisp = 0  # já existe
+        if tipo_id is None:
+            raise TypeError('Tipo de dispositivo não identificado.')
 
-            return idDisp
+        with transaction.atomic():
+            if self.id and Dispositivo.objects.filter(id=self.id).exists():
+                return 0
 
-        except mysql_connector.Error as err:
-            conexao.rollback()
-            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                raise RuntimeError("Usuário/senha do MySQL inválidos.") from err
-            elif err.errno == errorcode.ER_BAD_DB_ERROR:
-                raise RuntimeError("Banco de dados não existe.") from err
-            else:
-                raise
-        finally:
-            cursor.close()
-            conexao.close()
+            # atribui o FK por id caso tenhamos um inteiro
+            if isinstance(self.tipo_dispositivo, int):
+                self.tipo_dispositivo_id = self.tipo_dispositivo
 
-    def insertTabela(self, conn, cur):
-        cur.execute(
-            """
-            INSERT INTO dispositivo (
-                Tipo_Dispositivo_Id, Uptime, Status, Comprimento, Largura,
-                Nome, Codigo_Vericacao, Armazenamento
-            )
-            VALUES (%s, NOW(), %s, %s, %s, %s, %s, %s)
-            """,
-            (
-                self.tipoDispositivo,
-                self.status,
-                self.comprimento,
-                self.largura,
-                self.nomeDispositivo,
-                self.cod_verificacao,
-                self.armazenamento,
-            )
+            self.save()
+            return self.id
+
+    def associarPlaylist(self, playlist_or_id, ordem=0):
+        """Associa este dispositivo a uma playlist (cria entrada em dispositivo_playlist)."""
+        from .disp_playlist import Dispositivo_Playlist
+
+        if isinstance(playlist_or_id, Playlist):
+            playlist = playlist_or_id
+        else:
+            playlist = Playlist.objects.get(pk=playlist_or_id)
+
+        assoc, created = Dispositivo_Playlist.objects.get_or_create(
+            dispositivo=self,
+            playlist=playlist,
+            defaults={'ordem_playlist': ordem}
         )
-        conn.commit()
-        return cur.lastrowid
-    
-    def associarPlaylist(self, idPlaylist, ordem):
-        associacao = Dispositivo_Playlist(
-        idDispPlaylist = None,
-        idDispositivo = self.idDispositivo,
-        idPlaylist = idPlaylist,
-        ordemPlaylist = ordem
-    )
-        
-        associacao.associar()
-        self.playlistAssociada.append(idPlaylist)
-
-
-
-def conectarBancoDados():
-    db_config = {
-        "host": "localhost",
-        "user": "root",
-        "password": "root",
-        "database": "db",
-    }
-
-    conn = mysql_connector.connect(**db_config)
-    cur = conn.cursor()
-    return conn, cur
-
-def verificarTabela(conn, cur):
-    #conn.start_transaction()
-    cur.execute(
-        """
-        CREATE TABLE IF NOT EXISTS dispositivo (
-            Id_Dispositivo INT AUTO_INCREMENT PRIMARY KEY,
-            Tipo_Dispositivo_ID INT NOT NULL,
-            Nome VARCHAR(255),
-            Codigo_Vericacao VARCHAR(255),
-            Comprimento INT NOT NULL,
-            Largura INT NOT NULL,
-            Armazenamento INT NOT NULL,
-            Status VARCHAR(255),
-            Uptime DATETIME
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-        """
-    )
-
-def verificarTipo(tipo):
-    if isinstance(tipo, TipoDispositivo):
-        return tipo.value
-    elif isinstance(tipo, int):
-        return tipo
-    else:
-        return 0
-
-def verificarIdExistente(id, cur):
-    cur.execute("SELECT Id_Dispositivo FROM dispositivo WHERE Id_Dispositivo = %s", (id,))
-    return cur.fetchone()
+        return assoc.id if created else 0
