@@ -3,7 +3,6 @@
 ![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
 ![Django](https://img.shields.io/badge/Django-4.0+-green.svg)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0+-orange.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 **Nexxo** é uma plataforma web de gerenciamento de conteúdo (CMS) desenvolvida especificamente para **Digital Out-of-Home (DOOH)**. O sistema permite o controle centralizado de mídias, playlists e dispositivos de exibição digital.
 
