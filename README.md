@@ -19,7 +19,7 @@ Projeto desenvolvido como parte do **First Steps** da **PUC TECH** - Liga Acadê
   
 ---
 
-## 🛠️ Tecnologias
+##  Tecnologias
 
 - **Backend:** Django
 - **Banco de Dados:** MySQL
@@ -29,14 +29,7 @@ Projeto desenvolvido como parte do **First Steps** da **PUC TECH** - Liga Acadê
 
 ---
 
-## 📋 Pré-requisitos
-
-- Python 
-- MySQL 
-
----
-
-## 🗄️ Modelos do Banco de Dados
+##  Modelos do Banco de Dados
 
 ### Principais Entidades
 
