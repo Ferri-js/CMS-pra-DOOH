@@ -35,29 +35,6 @@
 - Python 
 - MySQL 
 
-```
-CMS-para-DOOH/
-│
-├── models/
-│   ├── midia.py              # Model de Mídia
-│   ├── dispositivo.py        # Model de Dispositivo
-│   ├── playlist.py           # Model de Playlist
-│   └── ...
-│
-├── database/
-│   └── schema.sql            # Script SQL do banco
-│
-├── static/
-│   └── ...                   # Arquivos estáticos
-│
-├── templates/
-│   └── ...                   # Templates HTML
-│
-├── requirements.txt          # Dependências Python
-├── manage.py                 # CLI Django
-└── README.md                 # Este arquivo
-```
-
 ---
 
 ## 🗄️ Modelos do Banco de Dados
