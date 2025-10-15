@@ -6,7 +6,7 @@
 
 **Nexxo** é uma plataforma web de gerenciamento de conteúdo (CMS) desenvolvida especificamente para **Digital Out-of-Home (DOOH)**. O sistema permite o controle centralizado de mídias, playlists e dispositivos de exibição digital.
 
->  Projeto desenvolvido como parte do **First Steps** da **PUC TECH** - Liga Acadêmica de Tecnologia da PUC.
+Projeto desenvolvido como parte do **First Steps** da **PUC TECH** - Liga Acadêmica de Tecnologia da PUC.
 
 ---
 
@@ -48,8 +48,3 @@
 - **DispositivoPlaylist** - Relação N:N entre Dispositivo e Playlist
 
 ---
-
-
-**PUC TECH** - Liga Acadêmica de Tecnologia da PUC
-
-Projeto First Steps 2024/2025
