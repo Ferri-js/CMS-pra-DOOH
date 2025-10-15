@@ -18,7 +18,7 @@ class Midia(models.Model):
     tamanho = models.IntegerField(db_column='Tamanho', null=True)
     tipo_midia = models.ForeignKey(tipoFormato, on_delete=models.CASCADE,db_column='Tipo_Midia_Id')
     url = models.CharField(db_column='URL', max_length=255, unique=True)
-    status = models.CharField(db_column='Status',max_length=50, null=True)
+    status = models.IntegerField(db_column='Status', null=True, blank=True)
     duracao = models.IntegerField(db_column='Duracao', null=True, blank=True)
     data_upload = models.DateTimeField(db_column='Data_Upload', null=True)
 
@@ -37,17 +37,20 @@ class Midia(models.Model):
            raise TypeError("Tipo de mídia deve ser um tipoFormato ou um inteiro correspondente ao ID.")
 
       try:
-            with transaction.atomic():
-                midia, created = Midia.objects.get_or_create(
-                    url=self.url,
-                    defaults={
-                        'titulo': self.titulo,
-                        'tipo_midia_id': tipo_id,
-                        'status': self.status,
-                        'duracao': self.duracao,
-                        'data_upload': self.data_upload if isinstance(self.data_upload, datetime) else datetime.combine(self.data_upload, datetime.min.time())
-                    }
-                )
+                try:
+                    midia, created = Midia.objects.get_or_create(
+                        url=self.url,
+                        defaults={
+                            'titulo': self.titulo,
+                            'tipo_midia': self.tipo_midia,
+                            'status': self.status,
+                            'duracao': self.duracao,
+                            'data_upload': self.data_upload,
+                        }
+                    )
+                except Exception as e:
+                    print("Erro ao cadastrar midia:", e)
+                    raise
 
                 if not created:
                     # Atualiza os campos se já existir

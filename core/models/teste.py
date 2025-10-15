@@ -1,7 +1,7 @@
 from midia import Midia
 from playlist import Playlist
 #from models.teste import midia_remover
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from tipoMidia import tipoFormato
 from tipoStatus import tipoStatus
 from dispositivo import Dispositivo  # supondo que você salvou a classe em dispositivo.py
@@ -40,10 +40,10 @@ tipo = tipoFormato.objects.get(id=1)  # pega o tipo que já existe
 m = Midia(
     titulo="Vídeo de teste",
     tipo_midia=tipo,
-    url="http://teste.com/video1",
+    url="http://teste.com/video1Teste",
     status="ativo",
     duracao=300,
-    data_upload=datetime.now()
+    data_upload=timezone.now()
 )
 
 m.cadastrarMidia()

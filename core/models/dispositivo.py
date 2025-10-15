@@ -1,10 +1,59 @@
 import mysql.connector as mysql_connector
 from mysql.connector import errorcode
-from tipoDispositivo import TipoDispositivo  # Enum esperado
-from disp_playlist import Dispositivo_Playlist
+from .tipoDispositivo import TipoDispositivo  # Enum esperado
+#from disp_playlist import Dispositivo_Playlist
+from django.db import models 
+from django.db import transaction
+class Dispositivo(models.Model):
 
-class Dispositivo:
-    def __init__(self, idDispositivo, nomeDispositivo, tipoDispositivo, armazenamento, status, comprimento, largura, cod_verificacao):
+    idDispositivo = models.AutoField(db_column="Id_Dispositivo", primary_key=True)
+    tipoDispositivo = models.ForeignKey(TipoDispositivo, on_delete=models.CASCADE, db_column='Tipo_Dispositivo_Id')
+    nomeDispositivo = models.CharField(db_column='Nome', max_length=255)
+    codVerificacao = models.CharField(db_column='Codigo_Verificacao', max_length=255, unique=True)
+    status = models.IntegerField(db_column='Status', null=True, blank=True)
+    #playlistAssociada = models.ManyToManyField(Playlist)
+
+    def cadastrarDispositivoORM(self):
+        if not self.nomeDispositivo:
+            raise ValueError('Nome é obrigatório para cadastrar Dispositivo')
+        
+        if isinstance(self.tipoDispositivo, TipoDispositivo):
+            tipoDispId = self.tipoDispositivo.id
+        elif isinstance(self.tipoDispositivo, int):
+            tipoDispId = self.tipoDispositivo
+        else:
+            raise ValueError('Tipo de dispositivo nao reconhecido')      
+
+        try:
+            dispositivo, created = Dispositivo.objects.get_or_create(
+                nomeDispositivo = self.nomeDispositivo,
+                defaults={
+                    'tipoDispositivo':self.tipoDispositivo,
+                    'status':self.status,
+                    'codVerificacao':self.codVerificacao,
+                }
+            )
+                 
+            if not created:
+                dispositivo.nomeDispositivo = self.nomeDispositivo
+                dispositivo.status = self.status
+                dispositivo.codVerificacao = self.codVerificacao
+                dispositivo.tipoDispositivo_id = tipoDispId
+                dispositivo.save()
+                
+            self.idDispositivo = dispositivo.idDispositivo
+            return self.idDispositivo
+              
+    
+        except Exception as e:
+            print('Erro ao cadastrar ou atualizar Dispositivo: ', str(e))
+            raise
+
+    class Meta:
+        db_table = 'dispositivo'
+        managed = False
+
+    """ def __init__(self, idDispositivo, nomeDispositivo, tipoDispositivo, armazenamento, status, comprimento, largura, cod_verificacao):
         self.idDispositivo = idDispositivo
         self.nomeDispositivo = nomeDispositivo
         self.tipoDispositivo = tipoDispositivo
@@ -13,12 +62,12 @@ class Dispositivo:
         self.comprimento = comprimento
         self.largura = largura
         self.cod_verificacao = cod_verificacao
-        self.playlistAssociada = []
+        self.playlistAssociada = []"""
 
     def reproduzirPlaylist(self):
         pass
 
-    def cadastrarDispositivo(self):
+    """def cadastrarDispositivo(self):
         conexao, cursor = conectarBancoDados()
 
         try:
@@ -52,41 +101,11 @@ class Dispositivo:
                 raise
         finally:
             cursor.close()
-            conexao.close()
+            conexao.close()    """
 
-    def insertTabela(self, conn, cur):
-        cur.execute(
-            """
-            INSERT INTO dispositivo (
-                Tipo_Dispositivo_Id, Uptime, Status, Comprimento, Largura,
-                Nome, Codigo_Vericacao, Armazenamento
-            )
-            VALUES (%s, NOW(), %s, %s, %s, %s, %s, %s)
-            """,
-            (
-                self.tipoDispositivo,
-                self.status,
-                self.comprimento,
-                self.largura,
-                self.nomeDispositivo,
-                self.cod_verificacao,
-                self.armazenamento,
-            )
-        )
-        conn.commit()
-        return cur.lastrowid
+
+
     
-    def associarPlaylist(self, idPlaylist, ordem):
-        associacao = Dispositivo_Playlist(
-        idDispPlaylist = None,
-        idDispositivo = self.idDispositivo,
-        idPlaylist = idPlaylist,
-        ordemPlaylist = ordem
-    )
-        
-        associacao.associar()
-        self.playlistAssociada.append(idPlaylist)
-
 
 
 def conectarBancoDados():
