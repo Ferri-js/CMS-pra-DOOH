@@ -3,8 +3,7 @@ django-environ
 gunicorn
 whitenoise
 django-htmx
-mysqlclient
 python-decouple
 ipython
-mysql-connector-python
+psycopg2-binary
 requests
