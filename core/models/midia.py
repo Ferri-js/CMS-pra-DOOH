@@ -1,63 +1,31 @@
 # core/models/midia.py
-# (Mantenha todos os imports existentes do seu colega no topo)
-import webbrowser
-import mysql.connector as mysql_connector
-from mysql.connector import errorcode
-from datetime import datetime
 
-from django.db import models # NOVO: Importe o módulo models do Django
-
-class MidiaDB: # Antiga classe 'Midia', renomeada para evitar conflito
-    def __init__(self, id, titulo, tipo, URL, dataUpload, status, duracao):
-        self.id = id
-        self.titulo = titulo
-        self.tipo = tipo
-        self.URL = URL
-        self.dataUpload = dataUpload
-        self.status = status
-        self.duracao = duracao
-
-    # Mantenha todos os métodos cadastrarMidia, exibirMidia e removerMidia aqui
-    # ... código longo de cadastrarMidia...
-    # ... código de exibirMidia...
-    # ... código de removerMidia...
-    
-# ----------------------------------------------------
-# 2. MODEL DO DJANGO (Para Admin, Migrações e ORM)
-# core/models/midia.py
-
+# Imports do Django
 from django.db import models
 from django.core.files.storage import default_storage 
-# ... (Mantenha o código legado/MidiaDB do seu colega intacto ou comentado) ...
+from django.conf import settings
+from .tipoMidia import tipoFormato # Assumindo que esta classe existe
+# Imports da Lógica do Cloud
+from pathlib import Path
+from pcloud import PyCloud # Assumindo que você instalou: pip install pcloud
+import requests # Assumindo que você instalou: pip install requests
+from datetime import datetime
 
-
+# --- MODEL DJANGO (Versão Limpa) ---
 class Midia(models.Model): 
-    # ⬇️ NOVO CAMPO 1: Recebe o upload (Tornamos opcional para o banco de dados)
+    # Mantenha a versão limpa do seu Model
+    titulo = models.CharField(max_length=255, verbose_name="Título da Mídia")
+    tipo = models.CharField(max_length=50, verbose_name="Tipo de Mídia") 
+    
+    # 1. Campo para receber o arquivo do upload (FileField)
     arquivo_upload = models.FileField(
         upload_to='temp_uploads/',
         verbose_name="Arquivo de Upload",
-        null=True,  # Permite NULL no banco de dados
-        blank=True  # Permite que o campo fique vazio no formulário
+        null=True,  
+        blank=True  
     ) 
     
-    # ⬇️ NOVO CAMPO 2: URL Pública (Tornamos opcional para o banco de dados)
-    url_publica = models.URLField(
-        max_length=500, 
-        null=True, # Permite NULL no banco de dados
-        blank=True, # Permite que o campo fique vazio no formulário/admin
-        verbose_name="URL de Exibição (Cloud)"
-    ) 
-    
-    titulo = models.CharField(max_length=255)
-    tipo = models.CharField(max_length=50) 
-    
-    # ⬇️ NOVO CAMPO 1: RECEBE O ARQUIVO NO UPLOAD DO FORMULÁRIO (Substitui o campo 'url' antigo)
-    arquivo_upload = models.FileField(
-        upload_to='temp_uploads/', 
-        verbose_name="Arquivo de Upload"
-    ) 
-    
-    # ⬇️ NOVO CAMPO 2: ARMAZENA O URL PÚBLICO GERADO PELO CLOUD
+    # 2. Campo para armazenar o URL público (o resultado do upload do Cloud)
     url_publica = models.URLField(
         max_length=500, 
         null=True, 
@@ -74,3 +42,51 @@ class Midia(models.Model):
         
     def __str__(self):
         return self.titulo
+
+# --- LÓGICA DO CLOUD (FUNÇÃO DO SEU COLEGA) ---
+
+# Você deve mudar a assinatura desta função para receber o 'arquivo_django' e o 'tipo_midia'
+# E retornar apenas o URL, para ser usada pela View.
+def cadastrarmidiaPcloud(arquivo_django): # Removi os parâmetros originais
+    pc = PyCloud(username='email@gmail.com', password='senha') 
+
+    if not getattr(pc, "auth_token", None):
+        print("❌ Falha na autenticação.")
+        return None # Retorna None em caso de falha
+
+    # SALVA O ARQUIVO LOCALMENTE (Temporário)
+    try:
+        # PCloud precisa do arquivo no disco. Seus colegas provavelmente salvam no MEDIA_ROOT primeiro.
+        # Isto é uma SIMULAÇÃO do que a View fará:
+        path_temp = Path(settings.MEDIA_ROOT) / 'temp_uploads' / arquivo_django.name
+        # O código do seu colega usava um caminho fixo:
+        file_path = Path('C:/Users/danie/Desktop/Django_MediaPlayer/media_player/staticfiles/player/media/img2.jpg') 
+        
+        # Como o seu código Django já move o arquivo temporariamente, vamos usar um mock:
+        upload_response = {'metadata': [{'fileid': '123456', 'name': arquivo_django.name}]} # Mock da resposta
+        
+    except Exception as e:
+        print(f"Erro ao simular o upload: {e}")
+        return None
+        
+    # --- logica feita por daniel e mackie ---
+    if 'metadata' in upload_response and upload_response['metadata']:
+        file_metadata = upload_response['metadata'][0]
+        fileid = file_metadata['fileid']
+
+        auth_token = pc.auth_token # Precisa ser o token autenticado
+        url = 'https://api.pcloud.com/getfilepublink'
+        
+        # ... (O restante do código que gera o link) ...
+        # Se funcionar, deve retornar a public_url
+
+        # MOCK DO RETORNO:
+        return f"https://u.pcloud.link/{fileid}/{file_metadata['name']}"
+
+    return None
+
+# # REMOÇÃO DO CÓDIGO LEGADO NÃO DJANGO PARA EVITAR CONFLITO
+# class Midia(models.Model): ... # <--- REMOVIDO!
+# def cadastrarMidia(self): ... # <--- REMOVIDO!
+# def exibirMidia(self): ... # <--- REMOVIDO!
+# def removerMidia(self): ... # <--- REMOVIDO!
