@@ -1,27 +1,43 @@
-# CMS-pra-DOOH
+# Nexxo - CMS para DOOH
 
-## Integração com pCloud
+![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
+![Django](https://img.shields.io/badge/Django-4.0+-green.svg)
+![MySQL](https://img.shields.io/badge/MySQL-8.0+-orange.svg)
 
-O projeto agora oferece comandos utilitários para sincronizar o arquivo de
-banco de dados SQLite padrão com uma pasta no pCloud. Configure as seguintes
-variáveis de ambiente antes de executar os comandos:
+**Nexxo** é uma plataforma web de gerenciamento de conteúdo (CMS) desenvolvida especificamente para **Digital Out-of-Home (DOOH)**. O sistema permite o controle centralizado de mídias, playlists e dispositivos de exibição digital.
 
-- `PCLOUD_EMAIL` – e-mail da conta pCloud;
-- `PCLOUD_PASSWORD` – senha da conta pCloud;
-- `PCLOUD_DB_REMOTE_PATH` – (opcional) caminho remoto no pCloud onde o arquivo
-  deve ser armazenado, por exemplo `/backups/db.sqlite3`.
+Projeto desenvolvido como parte do **First Steps** da **PUC TECH** - Liga Acadêmica de Tecnologia da PUC.
 
-### Upload do banco para o pCloud
+---
 
-```bash
-python manage.py pcloud_sync_db upload
-```
+##  Funcionalidades
 
-### Download do banco do pCloud
+-  **Gerenciamento de Dispositivos** - Cadastro e controle de telas e dispositivos DOOH
+-  **Gestão de Mídias** - Upload e organização de vídeos, imagens e conteúdo multimídia
+-  **Playlists Inteligentes** - Criação e agendamento de playlists para exibição
+-  **Integração pCloud** - Armazenamento em nuvem para mídias
+  
+---
 
-```bash
-python manage.py pcloud_sync_db download
-```
+##  Tecnologias
 
-Também é possível especificar um caminho remoto ou destino local diferente com
-as opções `--remote-path` e `--destination`.
+- **Backend:** Django
+- **Banco de Dados:** MySQL
+- **ORM:** Django ORM
+- **Cloud Storage:** pCloud API
+- **Frontend:** Django Templates (HTML + HTMX)
+
+---
+
+##  Modelos do Banco de Dados
+
+### Principais Entidades
+
+- **Midia** - Armazena vídeos, imagens e outros conteúdos
+- **Dispositivo** - Representa telas e displays DOOH
+- **Playlist** - Agrupa mídias em sequências de reprodução
+- **TipoMidia** / **TipoDispositivo** - Categorização de tipos
+- **MidiaPlaylist** - Relação N:N entre Mídia e Playlist
+- **DispositivoPlaylist** - Relação N:N entre Dispositivo e Playlist
+
+---

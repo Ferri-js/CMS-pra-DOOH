@@ -54,17 +54,21 @@ ROOT_URLCONF = 'nexxo_cms.urls'
 
 # settings.py
 
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],  # Esta lista pode estar vazia ou ter caminhos de templates de projeto
-        'APP_DIRS': True, # ESTE É O PONTO CRÍTICO!
+        # DIRS VAZIA e APP_DIRS True (para encontrar tanto o Admin quanto seus templates)
+        'DIRS': [], 
+        'APP_DIRS': True, 
         'OPTIONS': {
+            # ESTA PARTE É OBRIGATÓRIA PARA O DJANGO
             'context_processors': [
                 'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request', # <-- Faltando
+                'django.contrib.auth.context_processors.auth', # <-- Faltando
+                'django.contrib.messages.context_processors.messages', # <-- Faltando
             ],
         },
     },
