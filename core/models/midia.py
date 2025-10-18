@@ -109,51 +109,64 @@ class Midia(models.Model):
             conn.close()
 
     def cadastrarMidiaPcloud():
-        pc = PyCloud(username='email@gmail.com', password='senha') 
+        pc = PyCloud(username='daniel.wteles@gmail.com', password='Pacocamilgrau12.') 
 
         if not getattr(pc, "auth_token", None):
             print("❌ Falha na autenticação.")
             return
 
-        file_path = Path('C:/Users/danie/Desktop/Django_MediaPlayer/media_player/staticfiles/player/media/img2.jpg')
+        file_paths =[
+            Path('C:/Users/danie/Desktop/Django_MediaPlayer/media_player/staticfiles/player/media/img4.jpg'),
+            Path('C:/Users/danie/Desktop/Django_MediaPlayer/media_player/staticfiles/player/media/img5.jpg'),
+            Path('C:/Users/danie/Desktop/Django_MediaPlayer/media_player/staticfiles/player/media/img7.png'),
+            Path('C:/Users/danie/Desktop/Django_MediaPlayer/media_player/staticfiles/player/media/img8.jpg'),
+        ]
 
-        upload_response = pc.uploadfile(files=[str(file_path)], folderid=0)
+        links_publicos = []
 
-        if 'metadata' in upload_response and upload_response['metadata']:
-            file_metadata = upload_response['metadata'][0]
-            fileid = file_metadata['fileid']
+        for file_path in file_paths:
+            upload_response = pc.uploadfile(files=[str(file_path)], folderid=0)
 
-            auth_token = pc.auth_token
-            url = 'https://api.pcloud.com/getfilepublink'
-            params = {
-                'auth': auth_token,
-                'fileid': fileid
-            }
+            if 'metadata' in upload_response and upload_response['metadata']:
+                file_metadata = upload_response['metadata'][0]
+                fileid = file_metadata['fileid']
 
-            try:
-                response = requests.get(url, params=params)
-                response.raise_for_status()  # Garante que status != 200 levanta erro
+                auth_token = pc.auth_token
+                url = 'https://api.pcloud.com/getfilepublink'
+                params = {
+                    'auth': auth_token,
+                    'fileid': fileid
+                }
 
                 try:
-                    publish_response = response.json()
-                except ValueError:
-                    print("❌ Resposta não está em JSON:", response.text)
-                    return
+                    response = requests.get(url, params=params)
+                    response.raise_for_status()  # Garante que status != 200 levanta erro
 
-                if publish_response.get('result') == 0:
-                    public_url = publish_response.get('link')
-                    print("✅ Upload realizado com sucesso!")
-                    print("Arquivo:", file_metadata.get('name'))
-                    print("Link público:", public_url)
-                else:
-                    print("❌ Erro ao gerar link público.")
-                    print("Resposta:", publish_response)
+                    try:
+                        publish_response = response.json()
+                    except ValueError:
+                        print("❌ Resposta não está em JSON:", response.text)
+                        return
 
-            except requests.exceptions.RequestException as e:
-                print(f"❌ Erro na requisição: {e}")
-                print("Resposta:", response.text if response else "Nenhuma resposta")
-        else:
-            print("❌ Erro ao fazer upload.")
-            print("Resposta:", upload_response)
+                    if publish_response.get('result') == 0:
+                        public_url = publish_response.get('link')
+                        links_publicos.append(public_url)
+                        print("✅ Upload realizado com sucesso!")
+                        print("Arquivo:", file_metadata.get('name'))
+                        print("Link público:", public_url)
+                    else:
+                        print("❌ Erro ao gerar link público.")
+                        print("Resposta:", publish_response)
+
+                except requests.exceptions.RequestException as e:
+                    print(f"❌ Erro na requisição: {e}")
+                    print("Resposta:", response.text if response else "Nenhuma resposta")
+            else:
+                print("❌ Erro ao fazer upload.")
+                print("Resposta:", upload_response)
+
+        print("\nLinks públicos gerados:")
+        for link in links_publicos:
+            print(link)        
 
             

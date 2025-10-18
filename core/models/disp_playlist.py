@@ -1,96 +1,43 @@
 import mysql.connector as mysql_connector
 from mysql.connector import errorcode
+from .dispositivo import Dispositivo
+from .playlist import Playlist
+from django.db import models
 
-class Dispositivo_Playlist:
+class Dispositivo_Playlist(models.Model):
     
-    def __init__(self, idDispPlaylist, idDispositivo, idPlaylist, ordem):
-        self.idDispPlaylist = idDispPlaylist
-        self.idDispositivo = idDispositivo
-        self.idPlaylist = idPlaylist
-        self.ordemPlaylist = ordem
+    id = models.AutoField(db_column='Id_DispPlaylist', primary_key=True)
+    id_playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE, db_column='Id_Playlist')
+    id_dispositivo = models.ForeignKey(Dispositivo, on_delete=models.CASCADE, db_column='Id_Dispositivo')
+    ordem_playlist = models.IntegerField(db_column='Ordem_Playlist', default=0)
 
-    def associar(self):
-        conexao, cursor = conectarBancoDados()
+    
+    class Meta:
+        db_table = 'dispositivo_playlist'
+        managed = False
+        unique_together = (('id_playlist', 'id_dispositivo'),)
+
+    def associarDispPlay(self):
         try:
-            conexao.start_transaction()
-            verificarTabela(conexao, cursor)
-
-            if not self.idDispositivo:
-                raise TypeError("idDispositivo é obrigatório para cadastrar o dispositivo.")
-            
-            if not self.idPlaylist:
-                raise TypeError("idPlaylist é obrigatório para cadastrar o dispositivo.")
-            
-    
-            row = verificarIdExistente(self.idDispositivo, cursor)
-
-            if not row:
-                idDispPlaylist = self.insertTabela(conexao, cursor)
-            else:
-                idDispPlaylist = 0  # já existe
-
-            return idDispPlaylist
-
-        except mysql_connector.Error as err:
-            conexao.rollback()
-            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                raise RuntimeError("Usuário/senha do MySQL inválidos.") from err
-            elif err.errno == errorcode.ER_BAD_DB_ERROR:
-                raise RuntimeError("Banco de dados não existe.") from err
-            else:
-                raise
-        finally:
-            cursor.close()
-            conexao.close()
-
-    def insertTabela(self, conn, cur):
-        cur.execute(
-            """
-            INSERT INTO dispositivo_playlist (
-                Id_DispPlaylist, Id_Playlist, Id_Dispositivo, Ordem_Playlist,
+            dispPlaylist, created = Dispositivo_Playlist.objects.get_or_create(
+                id_playlist=self.id_playlist,
+                id_dispositivo=self.id_dispositivo,
+                defaults={
+                    'ordem_playlist': self.ordem_playlist,
+                }
             )
-            VALUES (%s,, %s, %s, %s)
-            """,
-            (
-                self.idDisPlaylist,
-                self.idPlaylist,
-                self.idDispositivo,
-                self.ordemPlaylist,
-            )
-        )
-        conn.commit()
-        return cur.lastrowid        
-      
 
+            if not created:
+                dispPlaylist.ordem_playlist = self.ordem_playlist
+                dispPlaylist.save()
 
-def conectarBancoDados():
-    db_config = {
-        "host": "localhost",
-        "user": "root",
-        "password": "root",
-        "database": "db",
-    }
+            self.id = dispPlaylist.id    
+            return self.id
+            
+        except Exception as e:
+            print('Erro ao cadastrar ou atualizar uma associacao entre dispositivo e playlist: ', str(e))
+            raise
+        
+        
+        pass
 
-    conn = mysql_connector.connect(**db_config)
-    cur = conn.cursor()
-    return conn, cur
-
-def verificarTabela(conn, cur):
-    #conn.start_transaction()
-    cur.execute(
-        """
-        CREATE TABLE IF NOT EXISTS dispositivo_playlist (
-            Id_DispPlaylist INT AUTO_INCREMENT PRIMARY KEY,
-            Id_Playlist INT NOT NULL,
-            Id_Dispositivo INT NOT NULL,
-            Ordem_Playlist INT NOT NULL,
-            FOREIGN KEY (Id_Dispositivo) REFERENCES dispositivo(Id_Dispositivo),
-            FOREIGN KEY (Id_Playlist) REFERENCES playlist(Id_Playlist)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-        """
-    )    
-
-
-def verificarIdExistente(id, cur):
-    cur.execute("SELECT Id_DispPlaylist FROM dispositivo WHERE Id_DispPlaylist = %s", (id,))
-    return cur.fetchone()    

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Web Media Player</title>
+    {% load static %}
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+        }
+    
+        #media-display {
+            width: 100vw;   /* 100% da largura da viewport */
+            height: 100vh;  /* 100% da altura da viewport */
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; /* evita scroll */
+        }
+    
+        #media-display img, 
+        #media-display video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* para manter proporção */
+            /*object-fit: cover - para a imagem toda*/ 
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Media Viewer -->
+    <div id="media-display">
+        <!-- Aqui o JS vai inserir as mídias -->
+    </div>
+
+    <!-- Hidden media list -->
+    <div id="media-list" style="display: none;">
+        {% for media in media_files %}
+            <div
+                class="media-item"
+                data-url="{{ media.file }}"
+                data-type="{% if media.is_video %}video{% elif media.is_image %}image{% endif %}"
+            ></div>
+        {% empty %}
+            <p>Nenhuma mídia disponível.</p>
+        {% endfor %}
+    </div>
+
+   <script defer src="{% static 'player/script.js' %}"></script>
+</body>
+</html>
