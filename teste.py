@@ -25,7 +25,7 @@ tipoMidia4 = tipoFormato.objects.get(id=2)
 midia1 = Midia(
     titulo="Praying 1",
     tipo_midia=tipoMidia1,
-    url="https://i.pinimg.com/originals/4b/3c/91/4b3c910ae4363c4d635ac07e75f9f7e6.gif",
+    url="https://static.wikia.nocookie.net/liberproeliis/images/7/7b/Fd371d211c8318a3cc5fcab6e34ea59a.jpg/revision/latest/scale-to-width-down/600?cb=20170313174539&path-prefix=pt-br",
     status= tipoStatus.ATIVO.value,
     duracao=90,
     data_upload=timezone.now()
@@ -75,16 +75,16 @@ play = Playlist(
 )
 
 
-play.cadastrarPlaylistORM()
-print(f"Playlist criada/atualizada com ID: {play.idPlaylist}")
+#play.cadastrarPlaylistORM()
+#print(f"Playlist criada/atualizada com ID: {play.idPlaylist}")
 
 #disp.cadastrarDispositivoORM()
 #print(f"Dispositivo criado/atualizado com ID: {disp.idDispositivo}")
 
 
 
-midia1.cadastrarMidia()
-print(f"Mídia criada/atualizada com ID: {midia1.id}")
+#midia1.cadastrarMidia()
+#print(f"Mídia criada/atualizada com ID: {midia1.id}")
 
 
 #midia2.cadastrarMidia()
@@ -127,7 +127,7 @@ mp4 = Midia_Playlist(
     ordem_midia = 4,
 )
 
-mp1.associarMP()
+#mp1.associarMP()
 #mp2.associarMP()
 #mp3.associarMP()
 #mp4.associarMP()
@@ -139,10 +139,11 @@ disPlaylist = Dispositivo_Playlist(
     ordem_playlist = 2
 )
 
-disp.cadastrarDispositivoORM()
+#disp.cadastrarDispositivoORM()
 
-disPlaylist.associarDispPlay()
-print(f"Playlist associada a dispositivo com id: {disPlaylist.id}")
+#disPlaylist.associarDispPlay()
+#print(f"Playlist associada a dispositivo com id: {disPlaylist.id}")
 
 #print(f"Mídia associada a playlist com ID_MP: {mp1.id_MP}")
 
+Midia.cadastrarMidiaSupabase()
