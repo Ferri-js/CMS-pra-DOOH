@@ -1,14 +1,14 @@
 import uuid
 import webbrowser
 from .tipoMidia import tipoFormato
-import mysql.connector as mysql_connector
-from mysql.connector import errorcode
 from datetime import datetime
 from pathlib import Path
 #from pcloud import PyCloud
 import requests
 from django.db import models 
 from django.db import transaction
+from django.core.files.storage import default_storage
+from django.conf import settings 
 from datetime import datetime
 from supabase import create_client
 #from midia_playlist import Midia_Playlist
@@ -18,16 +18,24 @@ import mimetypes
 
 class Midia(models.Model):
     id = models.AutoField(db_column='Id_Midia', primary_key=True)
-    titulo = models.CharField(db_column = 'Titulo', max_length=255, null=True, blank=True)
+    titulo = models.CharField(db_column = 'Titulo', max_length=255, null=True, blank=True, verbose_name="Título da Mídia")
     tamanho = models.IntegerField(db_column='Tamanho', null=True)
-    tipo_midia = models.ForeignKey(tipoFormato, on_delete=models.CASCADE,db_column='Tipo_Midia_Id')
-    url = models.CharField(db_column='URL', max_length=255, unique=True)
-    status = models.IntegerField(db_column='Status', null=True, blank=True)
+    tipo_midia = models.ForeignKey(tipoFormato, on_delete=models.CASCADE,db_column='Tipo_Midia_Id', verbose_name="Tipo de Mídia", null=True)
+    url = models.CharField(db_column='URL', max_length=255, unique=True, verbose_name="URL de Exibição")
+    status = models.IntegerField(db_column='Status', null=True, blank=True, default=1)
     duracao = models.IntegerField(db_column='Duracao', null=True, blank=True)
-    data_upload = models.DateTimeField(db_column='Data_Upload', null=True)
+    data_upload = models.DateTimeField(db_column='Data_Upload', null=True, auto_now_add=True)
 
 
-
+     # 1. Campo para receber o arquivo do upload (FileField)
+    arquivo_upload = models.FileField(
+        #upload_to='temp_uploads/',
+        db_column='caminho_midia',    
+        verbose_name="Arquivo de Upload",
+        null=True,  
+        blank=True  
+    ) 
+    
     def cadastrarMidia(self):  
       if not self.url:
             raise ValueError('URL obrigatório para cadastrar mídia')
@@ -70,109 +78,14 @@ class Midia(models.Model):
       except Exception as e:
             raise RuntimeError("Erro ao cadastrar ou atualizar mídia.") from e     
         
-      
-     # None
-
     class Meta:
         db_table = 'midia'
         managed = False  # se a tabela já existe no banco e você não quer que o Django a modifique  
+        verbose_name_plural = "Mídias"
 
-    def exibirMidia(self):
-        print(f"ID: {self.id}, Título: {self.titulo}, Tipo: {self.tipo}")
-        if self.URL:
-            webbrowser.open(self.URL)
-
-    def removerMidia(self):
-        if not self.id:
-            raise ValueError("ID da mídia não definido.")
-
-        db_config = {
-            "host": "localhost",
-            "user": "root",
-            "password": "root",
-            "database": "db",
-        }
-
-        conn = mysql_connector.connect(**db_config)
-        cur = conn.cursor()
-        try:
-            conn.start_transaction()
-            cur.execute("DELETE FROM Midia WHERE Id_Midia = %s", (self.id,))
-            conn.commit()
-            print(f"Mídia com ID {self.id} removida com sucesso.")
-            self.id = None
-        except mysql_connector.Error as err:
-            conn.rollback()
-            print(f"Erro ao remover mídia: {err}")
-            raise
-        finally:
-            try:
-                cur.close()
-            except Exception:
-                pass
-            conn.close()
-
-#    def cadastrarMidiaPcloud():
-#        pc = PyCloud(username='daniel.wteles@gmail.com', password='Pacocamilgrau12.') 
-
-#        if not getattr(pc, "auth_token", None):
-#            print("❌ Falha na autenticação.")
-#            return
-
-#        file_paths =[
-#            Path('C:/Users/danie/Desktop/Django_MediaPlayer/media_player/staticfiles/player/media/img4.jpg'),
-#            Path('C:/Users/danie/Desktop/Django_MediaPlayer/media_player/staticfiles/player/media/img5.jpg'),
-#            Path('C:/Users/danie/Desktop/Django_MediaPlayer/media_player/staticfiles/player/media/img7.png'),
-#            Path('C:/Users/danie/Desktop/Django_MediaPlayer/media_player/staticfiles/player/media/img8.jpg'),
-#        ]
-
-#        links_publicos = []
-
-#        for file_path in file_paths:
-#            upload_response = pc.uploadfile(files=[str(file_path)], folderid=0)
-
-#            if 'metadata' in upload_response and upload_response['metadata']:
-#                file_metadata = upload_response['metadata'][0]
-#                fileid = file_metadata['fileid']
-
-#                auth_token = pc.auth_token
-#                url = 'https://api.pcloud.com/getfilepublink'
-#                params = {
-#                    'auth': auth_token,
-#                    'fileid': fileid
-#                }
-
-#               try:
-#                    response = requests.get(url, params=params)
-#                    response.raise_for_status()  # Garante que status != 200 levanta erro
-
-#                    try:
-#                        publish_response = response.json()
-#                    except ValueError:
-#                        print("❌ Resposta não está em JSON:", response.text)
-#                        return
-
-#                    if publish_response.get('result') == 0:
-#                        public_url = publish_response.get('link')
-#                        links_publicos.append(public_url)
-#                        print("✅ Upload realizado com sucesso!")
-#                        print("Arquivo:", file_metadata.get('name'))
-#                        print("Link público:", public_url)
-#                    else:
-#                        print("❌ Erro ao gerar link público.")
-#                        print("Resposta:", publish_response)
-
-#                except requests.exceptions.RequestException as e:
-#                    print(f"❌ Erro na requisição: {e}")
-#                    print("Resposta:", response.text if response else "Nenhuma resposta")
-#            else:
-#                print("❌ Erro ao fazer upload.")
-#                print("Resposta:", upload_response)
-
-#        print("\nLinks públicos gerados:")
-#        for link in links_publicos:
-#            print(link)
-
+    def __str__(self):
+        return self.titulo
+    
     def cadastrarMidiaSupabase():
         nome_bucket = "NexxoMedias"
         pasta_bucket = "medias"
@@ -208,6 +121,10 @@ class Midia(models.Model):
                 url = supabase.storage.from_(nome_bucket).get_public_url(nome_unico)
                 links.append(url)
         print(links)
-        return links                
+        return links               
+     
 
-            
+
+
+
+

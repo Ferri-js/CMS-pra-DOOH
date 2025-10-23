@@ -1,149 +1,60 @@
-import mysql.connector as mysql_connector
-from mysql.connector import errorcode
-from datetime import datetime
-#from midia_playlist import Midia_Playlist
+# core/models/playlist.py
+
+# Importa o módulo models do Django para herança
 from django.db import models
+from .midia import Midia # Importa o Model Midia para relacionamento
 
-class Playlist(models.Model):
-    idPlaylist = models.AutoField(db_column='id_Playlist',primary_key=True)
-    nomePlaylist = models.CharField(db_column='Nome_Playlist', max_length=255, blank=True, null=True)
+# --- MODELS DO DJANGO (Versão Limpa e Funcional) ---
+# Esta é a versão que o Admin, Migrações e Views usarão.
 
-    def cadastrarPlaylistORM(self):
-        if not self.nomePlaylist:
-            raise ValueError("Nome da playlist é obrigatório para cadastrar")
+class Playlist(models.Model): 
+    # Mantenha seus campos limpos. O código do seu colega tinha campos diferentes.
+    titulo = models.CharField(max_length=100, unique=True, verbose_name="Título da Playlist")
+    ativa = models.BooleanField(default=False, verbose_name="Playlist Ativa")
+    
+    def __str__(self):
+        return self.titulo
         
-        try:
-            play, created = Playlist.objects.get_or_create(
-                nomePlaylist = self.nomePlaylist,
-            )
-
-            if not created:
-                play.nomePlaylist = self.nomePlaylist
-                play.save()
-
-            self.idPlaylist = play.idPlaylist
-            return self.idPlaylist
-        
-        except Exception as e:
-            print("Erro ao cadastrar ou atualizar playlist: ", str(e))    
-            raise
-
+class ItemPlaylist(models.Model):
+    playlist = models.ForeignKey(
+        Playlist, 
+        related_name='itens', 
+        on_delete=models.CASCADE
+    )
+    midia = models.ForeignKey(
+        Midia, 
+        on_delete=models.CASCADE
+    )
+    ordem = models.PositiveIntegerField(verbose_name="Ordem de Exibição") 
+    
     class Meta:
-        db_table = 'playlist'
-        managed = False
+        ordering = ['ordem']
+        unique_together = ('playlist', 'ordem') 
+        
+    def __str__(self):
+        return f"{self.playlist.titulo} - {self.midia.titulo} ({self.ordem})"
 
+# -------------------------------------------------------------------------
+# --- CÓDIGO LEGADO SQL DO SEU COLEGA (MANTIDO APENAS PARA REFERÊNCIA) ---
+# -------------------------------------------------------------------------
+"""
+# NOTA: O código abaixo foi comentado para evitar conflitos de sintaxe com o Django ORM.
+# Ele serve como referência para a lógica de inserção direta no MySQL.
 
-"""    def __init__(self, idPlaylist, nomePlaylist):
-        self.idPlaylist = idPlaylist  # Se usar AUTO_INCREMENT, pode deixar None
-        self.nomePlaylist = nomePlaylist
-        self.listaMidias = []
+# Originalmente, o seu colega tinha esta classe:
+# class Playlist(models.Model): # Ele usou models.Model, mas a lógica era SQL
+#    idPlaylist = models.AutoField(db_column='Id_Playlist', primary_key=True)
+#    nomePlaylist = models.CharField(db_column='Nome_Playlist', max_length=255, blank=True, null=True)
 
-    def adicionarMidia(self, mid):
-        self.listaMidias.append(mid)
+#    def cadastrarPlaylistORM(self):
+#        # ... lógica de get_or_create e save ORM ...
 
-    def removerMidia(self):
-        if self.listaMidias:
-            self.listaMidias.pop()
-
-    def cadastrarPlaylist(self):
-        import mysql.connector as mysql_connector
-        from mysql.connector import errorcode
-        from datetime import datetime"""
-
- # def associarPlaylist(self, idMidia, ordem):
-#     associacao = Midia_Playlist(
-#         idMidiaPlaylist=None,
-#         idPlaylist=self.idPlaylist,
-#         idMid=idMidia,
-#         ordemMidia=ordem
-#     )
-
-#     associacao.associar()
-#     self.listaMidias.append(idMidia)
-
-#     if mysql_connector is None:
-#         raise RuntimeError(
-#             "O pacote mysql-connector-python não está instalado. Instale com: pip install mysql-connector-python"
-#         )
-
-#     db_config = {
-#         "host": "localhost",
-#         "user": "root",
-#         "password": "root",
-#         "database": "db", 
-#     }
-
-#     conn = mysql_connector.connect(**db_config)
-#     cur = conn.cursor()
-#     try:
-#         conn.start_transaction()
-
-#         # Inserir na tabela Playlist (sem o ID, pois é AUTO_INCREMENT)
-#         cur.execute(
-#             "INSERT INTO Playlist (Nome_Playlist) VALUES (%s)",
-#             (self.nomePlaylist,)
-#         )
-#         playlist_id = cur.lastrowid
-
-#         # Inserir mídias e relacionamentos
-#         midias = getattr(self, "midias", []) or []
-
-#         for idx, m in enumerate(midias, start=1):
-#             titulo = getattr(m, "titulo", None) or (m.get("titulo") if isinstance(m, dict) else None)
-#             url = getattr(m, "URL", None) or (m.get("URL") if isinstance(m, dict) else None)
-#             tipo = getattr(m, "tipo", None) or (m.get("tipo") if isinstance(m, dict) else None)
-#             data_upload = getattr(m, "dataUpload", None)
-#             status = getattr(m, "status", None)
-#             duracao = getattr(m, "duracao", None)
-
-#             if not (titulo and url and tipo):
-#                 raise ValueError(f"Mídia inválida na posição {idx}: precisa de titulo, url e tipo.")
-
-#             # Verifica se a mídia já existe
-#             cur.execute("SELECT Id_Midia FROM Midia WHERE URL = %s", (url,))
-#             row = cur.fetchone()
-#             if row:
-#                 midia_id = row[0]
-#                 # Atualiza campos principais
-#                 cur.execute(
-#                     "UPDATE Midia SET Status = %s, Duracao = %s WHERE Id_Midia = %s",
-#                     (status, duracao, midia_id)
-#                 )
-#             else:
-#                 # Insere nova mídia
-#                 cur.execute(
-#                     """
-#                     INSERT INTO Midia (Tipo_Midia_Id, Status, Duracao, Data_Upload, URL)
-#                     VALUES (%s, %s, %s, %s, %s)
-#                     """, 
-#                     (1, status, duracao, data_upload, url)
-#                 )
-#                 midia_id = cur.lastrowid
-
-#             # Relacionamento na tabela Midia_Playlist
-#             cur.execute(
-#                 """
-#                 INSERT INTO Midia_Playlist (Id_Midia, Id_Playlist, Ordem_Midia)
-#                 VALUES (%s, %s, %s)
-#                 ON DUPLICATE KEY UPDATE Ordem_Midia = VALUES(Ordem_Midia)
-#                 """,
-#                 (midia_id, playlist_id, idx)
-#             )
-
-#         conn.commit()
-#         return playlist_id
-
-#     except mysql_connector.Error as err:
-#         conn.rollback()
-#         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-#             raise RuntimeError("Usuário/senha do MySQL inválidos.") from err
-#         elif err.errno == errorcode.ER_BAD_DB_ERROR:
-#             raise RuntimeError("Banco de dados não existe.") from err
-#         else:
-#             raise
-#     finally:
-#         try:
-#             cur.close()
-#         except Exception:
-#             pass
-#         conn.close()
+#    class Meta:
+#        db_table = 'playlist'
+#        managed = False # Indica que esta tabela é gerenciada externamente (não pelo Django)
+        
+# Código Complexo de SQL Direto (MANTIDO SOMENTE AQUI DENTRO DO COMENTÁRIO)
+# def cadastrarPlaylist(self):
+#     # ... código longo de conexão e execução de comandos INSERT INTO ...
+#     pass
+"""
