@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Midia, Playlist, ItemPlaylist # Importe os models de playlist
+from .models import Midia, Playlist, Midia_Playlist # Importe os models de playlist
 
 # Model de Mídia (Uploads)
 admin.site.register(Midia)
@@ -12,4 +12,4 @@ admin.site.register(Midia)
 
 # Adicione estes comandos para ver as playlists no admin:
 admin.site.register(Playlist)
-admin.site.register(ItemPlaylist)
+admin.site.register(Midia_Playlist)

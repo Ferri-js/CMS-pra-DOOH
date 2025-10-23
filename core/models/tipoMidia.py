@@ -1,4 +1,3 @@
-from enum import Enum
 from django.db import models 
 
 class tipoFormato(models.Model):

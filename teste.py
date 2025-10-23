@@ -64,18 +64,18 @@ midia4 = Midia(
 tipoDisp = TipoDispositivo.objects.get(id=1)
 
 disp = Dispositivo(
-    nomeDispositivo='Dispositivo Crash Teste',
+    nomeDispositivo='Dispositivo Back end e Front end integrado',
     status = tipoStatus.ATIVO.value,
-    codVerificacao= 'CB',
+    codVerificacao= 'nextage',
     tipoDispositivo = tipoDisp
 )
 
 play = Playlist(
-    nomePlaylist='Playlist Teste Player J'
+    nomePlaylist='playlist teste frontend'
 )
 
 
-#play.cadastrarPlaylistORM()
+play.cadastrarPlaylistORM()
 #print(f"Playlist criada/atualizada com ID: {play.idPlaylist}")
 
 #disp.cadastrarDispositivoORM()
@@ -136,14 +136,14 @@ mp4 = Midia_Playlist(
 disPlaylist = Dispositivo_Playlist(
     id_playlist = play,
     id_dispositivo = disp,
-    ordem_playlist = 2
+    ordem_playlist = 1
 )
 
-#disp.cadastrarDispositivoORM()
+disp.cadastrarDispositivoORM()
 
-#disPlaylist.associarDispPlay()
+disPlaylist.associarDispPlay()
 #print(f"Playlist associada a dispositivo com id: {disPlaylist.id}")
 
 #print(f"Mídia associada a playlist com ID_MP: {mp1.id_MP}")
 
-Midia.cadastrarMidiaSupabase()
+#Midia.cadastrarMidiaSupabase()

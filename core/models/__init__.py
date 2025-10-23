@@ -3,6 +3,8 @@
 from .midia import Midia # <-- Isso lista o Model Midia
 
 # ⬇️ ADICIONE ESTA LINHA (Assumindo que PlaylistDB está em playlist.py)
-from .playlist import Playlist, ItemPlaylist
+from .playlist import Playlist
 
 from .tipoDispositivo import TipoDispositivo 
+
+from .midia_playlist import Midia_Playlist

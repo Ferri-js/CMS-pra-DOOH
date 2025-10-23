@@ -1,5 +1,3 @@
-import mysql.connector as mysql_connector
-from mysql.connector import errorcode
 from .dispositivo import Dispositivo
 from .playlist import Playlist
 from django.db import models
@@ -10,12 +8,6 @@ class Dispositivo_Playlist(models.Model):
     id_playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE, db_column='Id_Playlist')
     id_dispositivo = models.ForeignKey(Dispositivo, on_delete=models.CASCADE, db_column='Id_Dispositivo')
     ordem_playlist = models.IntegerField(db_column='Ordem_Playlist', default=0)
-
-    
-    class Meta:
-        db_table = 'dispositivo_playlist'
-        managed = False
-        unique_together = (('id_playlist', 'id_dispositivo'),)
 
     def associarDispPlay(self):
         try:
@@ -37,7 +29,10 @@ class Dispositivo_Playlist(models.Model):
         except Exception as e:
             print('Erro ao cadastrar ou atualizar uma associacao entre dispositivo e playlist: ', str(e))
             raise
-        
-        
-        pass
 
+    class Meta:
+        db_table = 'dispositivo_playlist'
+        managed = False
+        unique_together = (('id_playlist', 'id_dispositivo'),)    
+        
+    
