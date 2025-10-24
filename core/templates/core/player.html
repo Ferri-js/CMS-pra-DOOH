@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>Player de Mídias</title>
+    {% load static %}
+    <style>
+        html, body {
+            margin: 0; padding: 0; height: 100%; width: 100%;
+        }
+        #media-display {
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        #media-display img, 
+        #media-display video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <div id="media-display"></div>
+
+    <div id="media-list" style="display: none;">
+        {% for midia in midias %}
+            <div
+                class="media-item"
+                data-url="{{ midia.url }}"
+                data-type="{% with ext=midia.tipo_midia.nome|lower %}{% if ext == 'mp4' or ext == 'gif' %}video{% else %}image{% endif %}{% endwith %}">
+            </div>
+        {% empty %}
+            <p>Nenhuma mídia disponível.</p>
+        {% endfor %}
+    </div>
+
+    <script defer src="{% static 'player/script.js' %}"></script>
+</body>
+</html>

@@ -1,17 +1,14 @@
 from django import forms
 from .models import Midia 
 
+# core/forms.py
 class MidiaForm(forms.ModelForm):
-    """Formulário usado no painel de gerenciamento para criar/editar mídias."""
     class Meta:
         model = Midia
-        # Inclua os campos que o usuário pode preencher
-        fields = ['titulo', 'tipo', 'url', 'duracao'] 
-        
-        # Opcional: Adicionar estilos básicos (você pode customizar o 'input-field' no CSS)
-        widgets = {
-            'titulo': forms.TextInput(attrs={'class': 'input-field'}),
-            'tipo': forms.TextInput(attrs={'class': 'input-field'}),
-            'url': forms.URLInput(attrs={'class': 'input-field'}),
-            'duracao': forms.NumberInput(attrs={'class': 'input-field'}),
-        }
+        # Mude de 'url' para 'arquivo_upload'
+        fields = ['titulo', 'tipo_midia', 'arquivo_upload', 'duracao'] 
+        # ...
+
+#class UploadMidiaForm(forms.Form):
+#    titulo = forms.CharField(max_length=255, required=True)
+#    arquivo = forms.FileField(required=True)        

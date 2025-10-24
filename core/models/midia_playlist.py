@@ -1,96 +1,42 @@
-import mysql.connector as mysql_connector
-from mysql.connector import errorcode
+from .midia import Midia
+from .playlist import Playlist
+from django.db import models
 
-class Midia_Playlist:
+class Midia_Playlist(models.Model):
     
-    def __init__(self, idMidiaPlaylist, idMidia, idPlaylist, ordem):
-        self.idMidiaPlaylist = idMidiaPlaylist
-        self.idMidia = idMidia
-        self.idPlaylist = idPlaylist
-        self.ordemMidia = ordem
+    id_MP = models.AutoField(db_column='Id_MidiaPlaylist', primary_key=True)
+    id_midia = models.ForeignKey(Midia, on_delete=models.CASCADE, db_column='Id_Midia')
+    id_playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE, db_column='Id_Playlist', related_name='itens',)
+    ordem_midia = models.IntegerField(db_column='Ordem_Midia', default=0, verbose_name="Ordem de Exibição")
 
-    def associar(self):
-        conexao, cursor = conectarBancoDados()
+    def associarMP(self):
         try:
-            conexao.start_transaction()
-            verificarTabela(conexao, cursor)
+                midiaPlaylist, created = Midia_Playlist.objects.get_or_create(
+                    id_midia=self.id_midia,
+                    id_playlist=self.id_playlist,
+                    defaults={
+                        'ordem_midia': self.ordem_midia,
+                    }
+                )
 
-            if not self.idMidia:
-                raise TypeError("idMidia é obrigatório para cadastrar o dispositivo.")
+                if not created:
+                    midiaPlaylist.ordem_midia = self.ordem_midia
+                    midiaPlaylist.save()
+
+                self.id_MP = midiaPlaylist.id_MP
+                return self.id_MP
             
-            if not self.idPlaylist:
-                raise TypeError("idPlaylist é obrigatório para cadastrar o dispositivo.")
-            
-    
-            row = verificarIdExistente(self.idMidia, cursor)
+        except Exception as e:
+            print('Erro ao cadastrar ou atualizar uma associacao entre midia e playlist: ', str(e))
+            raise 
+                    
 
-            if not row:
-                idMidiaPlaylist = self.insertTabela(conexao, cursor)
-            else:
-                idMidiaPlaylist = 0  # já existe
+    class Meta:
+       db_table = 'midia_playlist'
+       managed = False
+       unique_together = (('id_midia', 'id_playlist'), ('id_playlist', 'ordem_midia'))
+       ordering = ['ordem_midia']
 
-            return idMidiaPlaylist
+    def __str__(self):
+        return f"{self.id_playlist.nomePlaylist} - {self.id_midia.titulo} ({self.ordem_midia})"   
 
-        except mysql_connector.Error as err:
-            conexao.rollback()
-            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                raise RuntimeError("Usuário/senha do MySQL inválidos.") from err
-            elif err.errno == errorcode.ER_BAD_DB_ERROR:
-                raise RuntimeError("Banco de dados não existe.") from err
-            else:
-                raise
-        finally:
-            cursor.close()
-            conexao.close()
-
-    def insertTabela(self, conn, cur):
-        cur.execute(
-            """
-            INSERT INTO midia_playlist (
-                Id_MidiaPlaylist, Id_Midia, Id_Playlist, Ordem_Midia,
-            )
-            VALUES (%s,, %s, %s, %s)
-            """,
-            (
-                self.idMidiaPlaylist,
-                self.idMidia,
-                self.idPlaylist,
-                self.ordemMidia,
-            )
-        )
-        conn.commit()
-        return cur.lastrowid        
-      
-
-
-def conectarBancoDados():
-    db_config = {
-        "host": "localhost",
-        "user": "root",
-        "password": "root",
-        "database": "db",
-    }
-
-    conn = mysql_connector.connect(**db_config)
-    cur = conn.cursor()
-    return conn, cur
-
-def verificarTabela(conn, cur):
-    #conn.start_transaction()
-    cur.execute(
-        """
-        CREATE TABLE IF NOT EXISTS dispositivo_playlist (
-            Id_MidiaPlaylist INT AUTO_INCREMENT PRIMARY KEY,
-            Id_Midia INT NOT NULL,
-            Id_Playlist INT NOT NULL,
-            Ordem_Midia INT NOT NULL,
-            FOREIGN KEY (Id_Midia) REFERENCES dispositivo(Id_Dispositivo),
-            FOREIGN KEY (Id_Playlist) REFERENCES playlist(Id_Playlist)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-        """
-    )    
-
-
-def verificarIdExistente(id, cur):
-    cur.execute("SELECT Id_MidiaPlaylist FROM dispositivo WHERE Id_MidiaPlaylist = %s", (id,))
-    return cur.fetchone()    

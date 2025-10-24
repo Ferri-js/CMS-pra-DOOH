@@ -41,6 +41,7 @@
     <div class="form-container">
         <h2>Adicionar Nova Mídia</h2>
         <form method="POST" 
+              enctype="multipart/form-data"
               hx-post="{% url 'gerenciar_midia' %}"           
               hx-target="#lista-midias"                   
               hx-swap="outerHTML" 
