@@ -4,15 +4,21 @@
             <tr style="background-color: #f2f2f2;">
                 <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Título</th>
                 <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Tipo</th>
-                <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">URL</th>
+                <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">URL Pública (Cloud)</th>
             </tr>
         </thead>
         <tbody>
         {% for midia in midias %}
             <tr>
                 <td style="padding: 8px; border: 1px solid #ddd;">{{ midia.titulo }}</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">{{ midia.tipo }}</td>
-                <td style="padding: 8px; border: 1px solid #ddd;"><a href="{{ midia.url }}" target="_blank">Abrir Link</a></td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{{ midia.get_tipo_display }}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">
+                    {% if midia.url_publica %}
+                        <a href="{{ midia.url_publica }}" target="_blank">Abrir Link Cloud</a>
+                    {% else %}
+                        (URL não gerada)
+                    {% endif %}
+                </td>
             </tr>
         {% endfor %}
         </tbody>

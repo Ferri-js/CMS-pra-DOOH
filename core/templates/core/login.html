@@ -1,46 +1,92 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login - Acesso ao Painel</title>
+    <title>Login - Acesso ao Painel NEXXO CMS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f0f0f0; }
-        .login-box { 
-            background: white; 
-            padding: 40px; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
-            width: 350px; 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5; /* Fundo cinza claro */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px; /* Largura máxima do formulário */
             text-align: center;
         }
-        h2 { color: #333; margin-bottom: 20px; }
-        input[type="text"], input[type="password"] {
+        h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+        /* Estilo para os parágrafos <p> gerados pelo {{ form.as_p }} */
+        .login-container p {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+        .login-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .login-container input[type="text"],
+        .login-container input[type="password"] {
             width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            display: inline-block;
+            padding: 12px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            box-sizing: border-box;
+            box-sizing: border-box; /* Evita que padding aumente a largura */
         }
-        button {
+        button[type="submit"] {
             width: 100%;
-            background-color: #007bff; 
+            background-color: #007bff; /* Azul */
             color: white;
-            padding: 10px;
-            margin-top: 15px;
+            padding: 12px;
+            margin-top: 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 1em;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
         }
-        .errorlist { list-style: none; color: red; padding: 0; margin-bottom: 10px; }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .errorlist { /* Estilo para erros de formulário */
+            list-style: none;
+            color: #dc3545; /* Vermelho para erros */
+            padding: 0;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            text-align: left;
+        }
+        .device-link {
+            margin-top: 25px;
+            font-size: 0.9em;
+        }
+        .device-link a {
+            color: #6c757d;
+            text-decoration: none;
+        }
+        .device-link a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
+    <div class="login-container">
+        <h2>Acesso ao Painel NEXXO CMS</h2>
 
-    <div class="login-box">
-        <h2>Acesso ao NEXXO CMS</h2>
-        
         {% if form.errors %}
             <ul class="errorlist">
                 {% for field in form %}
@@ -55,13 +101,12 @@
         {% endif %}
 
         <form method="POST" action="{% url 'tela_login' %}">
-            {% csrf_token %}  {{ form.as_p }}
-            
-            <button type="submit">Entrar</button>
-            
-            <p style="margin-top: 20px; font-size: 0.9em;"><a href="{% url 'verificacao' %}">Sou um Dispositivo (Verificação)</a></p>
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="hidden" name="next" value="{{ request.GET.next }}"> <button type="submit">Entrar</button>
         </form>
-    </div>
 
+        <p class="device-link"><a href="{% url 'verificacao' %}">Sou um Dispositivo (Verificação)</a></p>
+    </div>
 </body>
 </html>

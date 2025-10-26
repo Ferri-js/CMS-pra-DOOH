@@ -11,10 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os  # Necessário para os caminhos de MEDIA e STATIC
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -37,14 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core',
+    'core', # Sua aplicação principal
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware', # Essencial para formulários POST
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -52,23 +52,17 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'nexxo_cms.urls'
 
-# settings.py
-
-
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # DIRS VAZIA e APP_DIRS True (para encontrar tanto o Admin quanto seus templates)
-        'DIRS': [], 
-        'APP_DIRS': True, 
+        'DIRS': [], # Deixe vazio se os templates estão dentro dos apps
+        'APP_DIRS': True, # Permite que o Django encontre templates dentro dos apps
         'OPTIONS': {
-            # ESTA PARTE É OBRIGATÓRIA PARA O DJANGO
             'context_processors': [
                 'django.template.context_processors.debug',
-                'django.template.context_processors.request', # <-- Faltando
-                'django.contrib.auth.context_processors.auth', # <-- Faltando
-                'django.contrib.messages.context_processors.messages', # <-- Faltando
+                'django.template.context_processors.request', # Necessário para Admin e request
+                'django.contrib.auth.context_processors.auth', # Necessário para Admin e login
+                'django.contrib.messages.context_processors.messages', # Necessário para Admin e mensagens
             ],
         },
     },
@@ -78,13 +72,7 @@ WSGI_APPLICATION = 'nexxo_cms.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-# settings.py
-
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
+# Configurado para usar SQLite para desenvolvimento (sem servidor MySQL)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -92,8 +80,8 @@ DATABASES = {
     }
 }
 
-
-# ESTE É O CÓDIGO DO MySQL QUE FOI COMENTADO PARA REFERÊNCIA:
+"""
+# Bloco MySQL comentado para referência futura:
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
@@ -107,8 +95,7 @@ DATABASES = {
 #         },
 #     }
 # }
-
-
+"""
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -132,9 +119,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'pt-br' # Mudado para português do Brasil
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Sao_Paulo' # Mudado para fuso horário de São Paulo
 
 USE_I18N = True
 
@@ -144,11 +131,25 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+# Diretório onde o Django deve procurar arquivos estáticos fora dos apps
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'core/static'), # Adiciona a pasta 'static' do seu app 'core'
+]
+
+# Media files (User uploaded files)
+# Onde os arquivos de upload serão salvos (ex: temp_uploads)
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# URL base para acessar os arquivos de mídia
+MEDIA_URL = '/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_URL = '/login/'
+# Configuração para o redirecionamento de login
+LOGIN_URL = '/login/' # URL da sua tela de login customizada
+LOGIN_REDIRECT_URL = '/gerenciar/' # URL para onde o usuário vai após o login
+LOGOUT_REDIRECT_URL = '/' # Opcional: para onde ir após logout

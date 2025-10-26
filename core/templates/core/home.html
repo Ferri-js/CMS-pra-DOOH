@@ -1,33 +1,106 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <title>Home - CMS Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo ao NEXXO CMS</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f7f7f7; }
-        h1 { color: #333; }
-        ul { list-style: none; padding: 0; }
-        li { margin-bottom: 15px; background: white; padding: 15px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        a { text-decoration: none; color: #007bff; font-weight: bold; font-size: 1.1em; }
-        p { color: #666; margin-top: 5px; }
+        /* Estilos Globais */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f8f9fa; /* Um cinza bem claro */
+            color: #343a40; /* Texto escuro */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Ocupa a tela toda */
+        }
+
+        /* Container Principal */
+        .container {
+            background-color: #ffffff; /* Fundo branco */
+            padding: 40px 50px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 700px;
+            width: 90%;
+        }
+
+        /* Título Principal */
+        .brand-title {
+            color: #007bff; /* Azul primário (pode mudar) */
+            font-size: 3.5rem; /* Tamanho grande */
+            font-weight: bold;
+            margin-bottom: 10px;
+            letter-spacing: -1px; /* Aproxima as letras */
+        }
+        
+        /* Subtítulo */
+        .subtitle {
+            font-size: 1.2rem;
+            color: #6c757d; /* Cinza secundário */
+            margin-bottom: 30px;
+        }
+
+        /* Descrição */
+        .description {
+            color: #495057;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        /* Botão Principal (Call to Action) */
+        .cta-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #28a745; /* Verde sucesso */
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: background-color 0.3s ease;
+            margin-bottom: 25px; /* Espaço abaixo do botão */
+        }
+        .cta-button:hover {
+            background-color: #218838; /* Verde mais escuro no hover */
+        }
+
+        /* Links Secundários */
+        .secondary-links {
+            margin-top: 20px;
+            border-top: 1px solid #dee2e6; /* Linha divisória */
+            padding-top: 20px;
+        }
+        .secondary-links a {
+            color: #6c757d; /* Cinza */
+            margin: 0 15px;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .secondary-links a:hover {
+            color: #007bff; /* Azul no hover */
+        }
     </style>
 </head>
 <body>
-    <h1>Bem-vindo ao CMS de Mídia (Dashboard)!</h1>
-    
-    <h2>Acesso Rápido</h2>
-    <ul>
-        <li>
-            <a href="{% url 'gerenciar_midia' %}">Gerenciamento de Mídia e Playlists</a>
-            <p>Faça upload de arquivos e organize as playlists.</p>
-        </li>
-        <li>
-            <a href="{% url 'verificacao' %}">Verificação de Dispositivo</a>
-            <p>Página de entrada para novos dispositivos (requer Código de Verificação).</p>
-        </li>
-        <li>
-            <a href="{% url 'player_exibicao' %}">Visualizar Player em Loop (Teste)</a>
-            <p>Tela de exibição final da mídia em loop.</p>
-        </li>
-    </ul>
+    <div class="container">
+        <h1 class="brand-title">NEXXO</h1>
+        <h2 class="subtitle">Seu CMS para Digital Out-of-Home (DOOH)</h2>
+        
+        <p class="description">
+            Gerencie facilmente suas mídias, crie playlists dinâmicas e controle a exibição em seus dispositivos de forma segura e eficiente.
+        </p>
+
+        <a href="{% url 'gerenciar_midia' %}" class="cta-button">Gerenciar Conteúdo</a>
+
+        <div class="secondary-links">
+            <a href="{% url 'verificacao' %}">Sou um Dispositivo</a> |
+            <a href="/admin/">Acesso Admin</a>
+        </div>
+    </div>
 </body>
 </html>

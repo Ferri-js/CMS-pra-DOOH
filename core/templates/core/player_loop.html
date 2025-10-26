@@ -1,65 +1,154 @@
-<script>
-    // --- 1. CONFIGURAÇÃO DE DADOS (Junta o Django ao JavaScript) ---
-    const PL_DATA = []; 
-
-    /* INÍCIO DO BLOCO DE INJEÇÃO DJANGO */
-    {% if playlist %}
-        {% for item in playlist.itens.all %}
-            PL_DATA.push({
-                "url": "{{ item.midia.url }}",
-                "tipo": "{{ item.midia.tipo|lower }}",
-                "duracao": "{{ item.midia.duracao|default:5 }}" // Correção de segurança
-            });
-        {% endfor %}
-    {% endif %}
-    /* FIM DO BLOCO DE INJEÇÃO DJANGO */
-
-    // --- 2. LÓGICA DO PLAYER ---
-    let currentIndex = 0;
-    const container = document.getElementById('player-container');
-    
-    function playNext() {
-        if (PL_DATA.length === 0) {
-            container.innerHTML = '<h1>Nenhuma mídia ativa para exibir.</h1>';
-            return;
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NEXXO Player</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Estilos para garantir tela cheia e ajuste de conteúdo */
+        body, html { margin: 0; padding: 0; overflow: hidden; background-color: #000; }
+        #player-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ccc; /* Cor clara para a mensagem */
+            font-family: sans-serif;
+            font-size: 1.5rem;
+            text-align: center;
         }
+        .media-element {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        #player-container h1 {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="player-container">
+        <h1>Carregando...</h1>
+    </div>
+
+    <script>
+        // --- 1. CONFIGURAÇÃO DE DADOS (Injeção Direta) ---
+        const PL_DATA = []; 
+
+        {% if playlist %}
+            {% for item in playlist.itens.all %}
+                // Adiciona o item à lista JS
+                PL_DATA.push({
+                    // IMPORTANTE: Garante que estamos usando url_publica
+                    "url": "{{ item.midia.url_publica }}", 
+                    "tipo": "{{ item.midia.tipo|lower }}",
+                    // Correção de segurança para evitar erro se duracao for None/null
+                    "duracao": "{{ item.midia.duracao|default:5 }}" 
+                });
+            {% endfor %}
+        {% else %}
+             console.log("Nenhuma playlist ativa encontrada pela view.");
+        {% endif %}
+
+        console.log("Playlist Data (PL_DATA):", PL_DATA); // Para depuração no navegador (F12)
+
+        // --- 2. LÓGICA DO PLAYER ---
+        let currentIndex = 0;
+        const container = document.getElementById('player-container');
         
-        // Lógica de LOOP
-        if (currentIndex >= PL_DATA.length) {
-            currentIndex = 0;
+        function playNext() {
+            // Verifica se a lista está vazia
+            if (PL_DATA.length === 0) {
+                if (!container.querySelector('h1')) { // Evita reescrever se já tem msg
+                    container.innerHTML = '<h1>Nenhuma mídia na playlist ativa ou URLs públicas faltando. Verifique o Admin.</h1>';
+                 } else if (container.querySelector('h1').textContent === 'Carregando...') {
+                     container.innerHTML = '<h1>Nenhuma mídia na playlist ativa ou URLs públicas faltando. Verifique o Admin.</h1>';
+                 }
+                return; // Para a execução se não houver dados
+            }
+            
+            // Lógica de LOOP
+            if (currentIndex >= PL_DATA.length) {
+                currentIndex = 0;
+            }
+
+            const current = PL_DATA[currentIndex];
+            container.innerHTML = ''; // Limpa o player antes de adicionar o novo
+
+            // Verifica se o URL existe antes de tentar carregar
+            if (!current.url || current.url.trim() === "") { 
+                console.warn(`Item ${currentIndex} (Tipo: ${current.tipo}) sem URL pública válida, pulando.`);
+                currentIndex++;
+                setTimeout(playNext, 100); // Tenta o próximo item rapidamente
+                return;
+            }
+
+            // Lógica para vídeo
+            if (current.tipo === 'video') {
+                const video = document.createElement('video');
+                video.src = current.url;
+                video.className = 'media-element';
+                video.autoplay = true;
+                video.muted = true; // Necessário para autoplay em muitos navegadores modernos
+                video.controls = false; 
+                video.onerror = (e) => { 
+                    console.error("Erro ao carregar vídeo:", current.url, "Erro:", e);
+                    currentIndex++;
+                    playNext(); 
+                };
+                video.onended = () => { 
+                    currentIndex++;
+                    playNext();
+                };
+                container.appendChild(video);
+                // Tenta tocar, capturando erros de autoplay
+                video.play().catch(error => { 
+                    console.warn("Autoplay bloqueado pelo navegador:", error);
+                    // Como alternativa, podemos tentar exibir o próximo item após um delay
+                    setTimeout(() => {
+                        currentIndex++;
+                        playNext();
+                    }, 1000); // Espera 1 segundo e tenta o próximo
+                });
+                
+            // Lógica para imagem
+            } else if (current.tipo === 'imagem') {
+                const image = document.createElement('img');
+                image.src = current.url;
+                image.className = 'media-element';
+                image.onerror = () => { 
+                     console.error("Erro ao carregar imagem:", current.url);
+                     currentIndex++;
+                     playNext(); 
+                };
+                container.appendChild(image);
+                
+                // Usa a duração, convertendo para número com segurança
+                const durationMs = (parseFloat(current.duracao) || 5) * 1000; 
+                setTimeout(() => {
+                    currentIndex++;
+                    playNext();
+                }, durationMs); 
+            // Se o tipo for desconhecido
+            } else {
+                 console.warn(`Tipo de mídia desconhecido: '${current.tipo}'. Pulando item ${currentIndex}. URL: ${current.url}`);
+                 currentIndex++;
+                 setTimeout(playNext, 100); // Tenta o próximo item rapidamente
+            }
         }
 
-        const current = PL_DATA[currentIndex];
-        container.innerHTML = ''; 
+        // Inicia a reprodução quando a página carrega
+        // Adiciona um pequeno delay para garantir que a DOM esteja pronta
+        document.addEventListener('DOMContentLoaded', (event) => {
+             // Limpa a mensagem "Carregando..." antes de começar
+             if (PL_DATA.length > 0) {
+                 container.innerHTML = ''; // Limpa só se tiver dados
+             }
+            playNext(); 
+        });
 
-        if (current.tipo === 'video') {
-            const video = document.createElement('video');
-            video.src = current.url;
-            video.className = 'media-element';
-            video.autoplay = true;
-            video.controls = false;
-            
-            video.onended = () => { 
-                currentIndex++;
-                playNext();
-            };
-            container.appendChild(video);
-            video.play();
-            
-        } else if (current.tipo === 'imagem') {
-            const image = document.createElement('img');
-            image.src = current.url;
-            image.className = 'media-element';
-            container.appendChild(image);
-            
-            setTimeout(() => {
-                currentIndex++;
-                playNext();
-            // Converte a duração para número (segurança)
-            }, parseFloat(current.duracao) * 1000); 
-        }
-    }
-
-    // Inicia a reprodução
-    playNext();
-</script>
+    </script>
+</body>
+</html>
