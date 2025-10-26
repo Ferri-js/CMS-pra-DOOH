@@ -4,7 +4,6 @@
     <title>NEXXO Player</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        /* Estilos para garantir tela cheia e ajuste de conteúdo */
         body, html { margin: 0; padding: 0; overflow: hidden; background-color: #000; }
         #player-container {
             width: 100vw;
@@ -12,7 +11,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #ccc; /* Cor clara para a mensagem */
+            color: #ccc;
             font-family: sans-serif;
             font-size: 1.5rem;
             text-align: center;
@@ -22,9 +21,9 @@
             max-height: 100%;
             object-fit: contain;
         }
-        #player-container h1 {
+         #player-container h1 {
             padding: 20px;
-        }
+         }
     </style>
 </head>
 <body>
@@ -34,56 +33,68 @@
     </div>
 
     <script>
-        // --- 1. CONFIGURAÇÃO DE DADOS (Injeção Direta) ---
-        const PL_DATA = []; 
+        const PL_DATA = [];
+        let initialMessage = '<h1>Nenhuma mídia na playlist ativa ou URLs públicas faltando. Verifique o Admin.</h1>'; // Mensagem padrão
 
         {% if playlist %}
+            console.log("Playlist encontrada. Processando itens...");
             {% for item in playlist.itens.all %}
-                // Adiciona o item à lista JS
-                PL_DATA.push({
-                    // IMPORTANTE: Garante que estamos usando url_publica
-                    "url": "{{ item.midia.url_publica }}", 
-                    "tipo": "{{ item.midia.tipo|lower }}",
-                    // Correção de segurança para evitar erro se duracao for None/null
-                    "duracao": "{{ item.midia.duracao|default:5 }}" 
-                });
+                {% if item.midia and item.midia.url_publica %}
+                    // Adiciona o item à lista JS
+                    PL_DATA.push({
+                        "url": "{{ item.midia.url_publica }}",
+                        "tipo": "{{ item.midia.tipo|lower }}",
+                        "duracao": {{ item.midia.duracao|default:5 }}
+                    });
+                {% else %}
+                    console.warn("Item {{ item.pk }} ignorado: Mídia associada ou URL pública está faltando.");
+                {% endif %}
             {% endfor %}
+            
+            // Se a playlist existe mas não tem itens VÁLIDOS, define a mensagem
+            if (PL_DATA.length === 0) {
+                 console.log("Playlist ativa encontrada, mas sem itens válidos (sem URL pública).");
+                 initialMessage = '<h1>Playlist ativa encontrada, mas sem mídias com URL válida. Verifique os cadastros.</h1>';
+            }
+
         {% else %}
-             console.log("Nenhuma playlist ativa encontrada pela view.");
+             console.log("Nenhuma playlist ativa encontrada ou associada ao dispositivo.");
+             initialMessage = '<h1>Nenhuma playlist ativa configurada para este dispositivo.</h1>';
         {% endif %}
 
-        console.log("Playlist Data (PL_DATA):", PL_DATA); // Para depuração no navegador (F12)
+        console.log("Dados da Playlist para JavaScript (PL_DATA):", PL_DATA);
 
-        // --- 2. LÓGICA DO PLAYER ---
+        // --- LÓGICA DO PLAYER ---
         let currentIndex = 0;
         const container = document.getElementById('player-container');
-        
+
         function playNext() {
-            // Verifica se a lista está vazia
             if (PL_DATA.length === 0) {
-                if (!container.querySelector('h1')) { // Evita reescrever se já tem msg
-                    container.innerHTML = '<h1>Nenhuma mídia na playlist ativa ou URLs públicas faltando. Verifique o Admin.</h1>';
-                 } else if (container.querySelector('h1').textContent === 'Carregando...') {
-                     container.innerHTML = '<h1>Nenhuma mídia na playlist ativa ou URLs públicas faltando. Verifique o Admin.</h1>';
-                 }
-                return; // Para a execução se não houver dados
+                // Exibe a mensagem inicial definida acima (seja por falta de playlist ou itens)
+                if (!container.innerHTML.includes('<h1>')) { // Só altera se não tiver uma mensagem já
+                    container.innerHTML = initialMessage;
+                }
+                return;
             }
-            
+
             // Lógica de LOOP
             if (currentIndex >= PL_DATA.length) {
+                console.log("Playlist concluída, reiniciando...");
                 currentIndex = 0;
             }
 
             const current = PL_DATA[currentIndex];
-            container.innerHTML = ''; // Limpa o player antes de adicionar o novo
+            container.innerHTML = ''; // Limpa o player
 
-            // Verifica se o URL existe antes de tentar carregar
-            if (!current.url || current.url.trim() === "") { 
+            // Pula item se URL estiver vazia (já filtrado no loop Django, mas como segurança extra)
+            if (!current.url || current.url.trim() === "") {
                 console.warn(`Item ${currentIndex} (Tipo: ${current.tipo}) sem URL pública válida, pulando.`);
                 currentIndex++;
-                setTimeout(playNext, 100); // Tenta o próximo item rapidamente
+                setTimeout(playNext, 100);
                 return;
             }
+
+            console.log(`Exibindo item ${currentIndex}: Tipo=${current.tipo}, URL=${current.url}, Duração=${current.duracao}s`);
 
             // Lógica para vídeo
             if (current.tipo === 'video') {
@@ -91,64 +102,59 @@
                 video.src = current.url;
                 video.className = 'media-element';
                 video.autoplay = true;
-                video.muted = true; // Necessário para autoplay em muitos navegadores modernos
-                video.controls = false; 
-                video.onerror = (e) => { 
-                    console.error("Erro ao carregar vídeo:", current.url, "Erro:", e);
+                video.muted = true; // Necessário para autoplay
+                video.controls = false;
+                video.onerror = (e) => {
+                    console.error(`Erro ao carregar vídeo ${currentIndex}:`, current.url, "Erro:", e);
                     currentIndex++;
-                    playNext(); 
+                    playNext();
                 };
-                video.onended = () => { 
+                video.onended = () => {
+                    console.log(`Vídeo ${currentIndex} finalizado.`);
                     currentIndex++;
                     playNext();
                 };
                 container.appendChild(video);
-                // Tenta tocar, capturando erros de autoplay
-                video.play().catch(error => { 
-                    console.warn("Autoplay bloqueado pelo navegador:", error);
-                    // Como alternativa, podemos tentar exibir o próximo item após um delay
-                    setTimeout(() => {
-                        currentIndex++;
-                        playNext();
-                    }, 1000); // Espera 1 segundo e tenta o próximo
+                video.play().catch(error => {
+                    console.warn("Autoplay bloqueado:", error, `. Pulando item ${currentIndex}.`);
+                    currentIndex++;
+                    setTimeout(playNext, 100);
                 });
-                
+
             // Lógica para imagem
             } else if (current.tipo === 'imagem') {
                 const image = document.createElement('img');
                 image.src = current.url;
                 image.className = 'media-element';
-                image.onerror = () => { 
-                     console.error("Erro ao carregar imagem:", current.url);
+                image.onerror = () => {
+                     console.error(`Erro ao carregar imagem ${currentIndex}:`, current.url);
                      currentIndex++;
-                     playNext(); 
+                     playNext();
                 };
                 container.appendChild(image);
-                
-                // Usa a duração, convertendo para número com segurança
-                const durationMs = (parseFloat(current.duracao) || 5) * 1000; 
+
+                const durationMs = (parseFloat(current.duracao) || 5) * 1000;
+                console.log(`Imagem ${currentIndex} exibida por ${durationMs / 1000} segundos.`);
                 setTimeout(() => {
                     currentIndex++;
                     playNext();
-                }, durationMs); 
+                }, durationMs);
             // Se o tipo for desconhecido
             } else {
                  console.warn(`Tipo de mídia desconhecido: '${current.tipo}'. Pulando item ${currentIndex}. URL: ${current.url}`);
                  currentIndex++;
-                 setTimeout(playNext, 100); // Tenta o próximo item rapidamente
+                 setTimeout(playNext, 100);
             }
         }
 
         // Inicia a reprodução quando a página carrega
-        // Adiciona um pequeno delay para garantir que a DOM esteja pronta
-        document.addEventListener('DOMContentLoaded', (event) => {
-             // Limpa a mensagem "Carregando..." antes de começar
-             if (PL_DATA.length > 0) {
-                 container.innerHTML = ''; // Limpa só se tiver dados
-             }
-            playNext(); 
+        document.addEventListener('DOMContentLoaded', () => {
+            // Limpa a mensagem "Carregando..."
+             container.innerHTML = '';
+             // Chama playNext para exibir a mensagem correta ou iniciar a playlist
+             playNext();
         });
 
     </script>
-</body>
+    </body>
 </html>
