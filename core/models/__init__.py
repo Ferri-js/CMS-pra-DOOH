@@ -6,3 +6,4 @@ from .midia import Midia # <-- Isso lista o Model Midia
 from .playlist import Playlist, ItemPlaylist
 
 from .tipoDispositivo import TipoDispositivo 
+from .dispositivo import Dispositivo

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verificação de Dispositivo</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px; background-color: #e9ecef; }
+        .box { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); display: inline-block; }
+        h1 { color: #007bff; }
+        input[type="text"] { padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>Autorização do Dispositivo</h1>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <p class="{% if message.tags %}error{% endif %}">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="text" name="codigo_verificacao" placeholder="Código de Verificação" required><br>
+            <button type="submit">Verificar Acesso</button>
+        </form>
+        
+        <p style="margin-top: 30px;">O código é fornecido pela administração do CMS.</p>
+    </div>
+</body>
+</html>

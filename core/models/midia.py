@@ -4,20 +4,34 @@
 from django.db import models
 from django.core.files.storage import default_storage 
 from django.conf import settings
-from .tipoMidia import tipoFormato # Assumindo que esta classe existe
-# Imports da Lógica do Cloud
+# Imports de Cloud (Mantenha esses imports, mas a lógica real está na função)
 from pathlib import Path
-from pcloud import PyCloud # Assumindo que você instalou: pip install pcloud
-import requests # Assumindo que você instalou: pip install requests
+from pcloud import PyCloud 
+import requests 
 from datetime import datetime
 
-# --- MODEL DJANGO (Versão Limpa) ---
+# --- CONFIGURAÇÃO DE CHOICES (Tipo Selecionável) ---
+MIDIA_CHOICES = [
+    ('VIDEO', 'Vídeo (MP4, MOV)'),
+    ('IMAGEM', 'Imagem (JPG, PNG)'),
+    ('HTML', 'HTML/Web (Anúncio Externo)'),
+]
+# ---------------------------------------------------
+
+
+# --- MODEL DJANGO (Versão Limpa, Final e Completa) ---
 class Midia(models.Model): 
-    # Mantenha a versão limpa do seu Model
     titulo = models.CharField(max_length=255, verbose_name="Título da Mídia")
-    tipo = models.CharField(max_length=50, verbose_name="Tipo de Mídia") 
     
-    # 1. Campo para receber o arquivo do upload (FileField)
+    # 1. CAMPO TIPO: Agora é um menu SELECIONÁVEL no formulário
+    tipo = models.CharField(
+        max_length=10, 
+        choices=MIDIA_CHOICES, # Usa a lista definida acima
+        default='VIDEO',
+        verbose_name="Tipo de Mídia"
+    ) 
+    
+    # 2. CAMPO PARA RECEBER O UPLOAD
     arquivo_upload = models.FileField(
         upload_to='temp_uploads/',
         verbose_name="Arquivo de Upload",
@@ -25,7 +39,7 @@ class Midia(models.Model):
         blank=True  
     ) 
     
-    # 2. Campo para armazenar o URL público (o resultado do upload do Cloud)
+    # 3. CAMPO PARA ARMAZENAR O URL PÚBLICO (Resultado final)
     url_publica = models.URLField(
         max_length=500, 
         null=True, 
@@ -35,7 +49,7 @@ class Midia(models.Model):
     
     data_upload = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=50, default='ativo')
-    duracao = models.IntegerField(null=True, blank=True)
+    duracao = models.IntegerField(null=True, blank=True, verbose_name="Duração (Segundos)")
     
     class Meta:
         verbose_name_plural = "Mídias"
@@ -43,50 +57,38 @@ class Midia(models.Model):
     def __str__(self):
         return self.titulo
 
-# --- LÓGICA DO CLOUD (FUNÇÃO DO SEU COLEGA) ---
+# --- LÓGICA DO CLOUD (FUNÇÃO QUE A VIEW CHAMA - Versão Adaptada) ---
 
-# Você deve mudar a assinatura desta função para receber o 'arquivo_django' e o 'tipo_midia'
-# E retornar apenas o URL, para ser usada pela View.
-def cadastrarmidiaPcloud(arquivo_django): # Removi os parâmetros originais
+# OBS: Esta função precisa ser chamada na View (views.py)
+def cadastrarmidiaPcloud(arquivo_django, tipo_midia):
     pc = PyCloud(username='email@gmail.com', password='senha') 
 
     if not getattr(pc, "auth_token", None):
-        print("❌ Falha na autenticação.")
-        return None # Retorna None em caso de falha
+        print("❌ Falha na autenticação. Configure PyCloud.")
+        return None 
 
-    # SALVA O ARQUIVO LOCALMENTE (Temporário)
     try:
-        # PCloud precisa do arquivo no disco. Seus colegas provavelmente salvam no MEDIA_ROOT primeiro.
-        # Isto é uma SIMULAÇÃO do que a View fará:
-        path_temp = Path(settings.MEDIA_ROOT) / 'temp_uploads' / arquivo_django.name
-        # O código do seu colega usava um caminho fixo:
-        file_path = Path('C:/Users/danie/Desktop/Django_MediaPlayer/media_player/staticfiles/player/media/img2.jpg') 
+        # AQUI VOCÊ CONECTARIA A LÓGICA DO SEU TIME PARA O UPLOAD REAL
         
-        # Como o seu código Django já move o arquivo temporariamente, vamos usar um mock:
-        upload_response = {'metadata': [{'fileid': '123456', 'name': arquivo_django.name}]} # Mock da resposta
+        # SIMULAÇÃO: 
+        fileid = 'GZzT2025' # ID fictício
+        file_name = arquivo_django.name
         
+        # MOCK DO RETORNO: Retorna o URL público gerado
+        public_url = f"https://u.pcloud.link/{fileid}/{file_name}"
+        print(f"--- [SIMULAÇÃO] URL GERADO PARA O CLOUD: {public_url} ---")
+        return public_url
+
     except Exception as e:
-        print(f"Erro ao simular o upload: {e}")
+        print(f"Erro na lógica de Cloud: {e}")
         return None
         
-    # --- logica feita por daniel e mackie ---
-    if 'metadata' in upload_response and upload_response['metadata']:
-        file_metadata = upload_response['metadata'][0]
-        fileid = file_metadata['fileid']
 
-        auth_token = pc.auth_token # Precisa ser o token autenticado
-        url = 'https://api.pcloud.com/getfilepublink'
-        
-        # ... (O restante do código que gera o link) ...
-        # Se funcionar, deve retornar a public_url
-
-        # MOCK DO RETORNO:
-        return f"https://u.pcloud.link/{fileid}/{file_metadata['name']}"
-
-    return None
-
-# # REMOÇÃO DO CÓDIGO LEGADO NÃO DJANGO PARA EVITAR CONFLITO
-# class Midia(models.Model): ... # <--- REMOVIDO!
-# def cadastrarMidia(self): ... # <--- REMOVIDO!
-# def exibirMidia(self): ... # <--- REMOVIDO!
-# def removerMidia(self): ... # <--- REMOVIDO!
+# --- CÓDIGO LEGADO DO SEU COLEGA ---
+# ⚠️ Se você tem mais classes ou lógica legada neste arquivo, isole-a com """..."""
+"""
+# Exemplo de código legado que você pode isolar:
+class MidiaDB:
+    # ... código de conexão MySQL ...
+    pass
+"""

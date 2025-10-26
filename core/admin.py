@@ -1,15 +1,21 @@
 from django.contrib import admin
-from .models import Midia, Playlist, ItemPlaylist # Importe os models de playlist
+from .models import Midia, Playlist, ItemPlaylist, Dispositivo, TipoDispositivo 
 
-# Model de Mídia (Uploads)
+# --- 1. REGISTRO DE MODELS SIMPLES ---
 admin.site.register(Midia)
+admin.site.register(TipoDispositivo)
+admin.site.register(Dispositivo) # AGORA ESTA LINHA VAI FUNCIONAR
 
-# O restante do código da Playlist foi removido temporariamente, 
-# pois ele estava causando o erro, já que 'ItemPlaylist' e 'Playlist' 
-# não são Models válidos do Django.
-# core/admin.py
-# ... (Model Midia já está registrado)
 
-# Adicione estes comandos para ver as playlists no admin:
-admin.site.register(Playlist)
-admin.site.register(ItemPlaylist)
+# --- 2. REGISTRO DE PLAYLISTS (INLINES) ---
+class ItemPlaylistInline(admin.TabularInline):
+    model = ItemPlaylist
+    extra = 1 
+    fields = ('midia', 'ordem') 
+    raw_id_fields = ('midia',) 
+
+@admin.register(Playlist)
+class PlaylistAdmin(admin.ModelAdmin):
+    list_display = ('titulo', 'ativa')
+    list_filter = ('ativa',)
+    inlines = [ItemPlaylistInline]

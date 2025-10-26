@@ -1,7 +1,33 @@
-{% extends 'core/base.html' %}
-
-{% block title %}
-Página Inicial
-{% endblock %}
-
-
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home - CMS Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f7f7f7; }
+        h1 { color: #333; }
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 15px; background: white; padding: 15px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        a { text-decoration: none; color: #007bff; font-weight: bold; font-size: 1.1em; }
+        p { color: #666; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Bem-vindo ao CMS de Mídia (Dashboard)!</h1>
+    
+    <h2>Acesso Rápido</h2>
+    <ul>
+        <li>
+            <a href="{% url 'gerenciar_midia' %}">Gerenciamento de Mídia e Playlists</a>
+            <p>Faça upload de arquivos e organize as playlists.</p>
+        </li>
+        <li>
+            <a href="{% url 'verificacao' %}">Verificação de Dispositivo</a>
+            <p>Página de entrada para novos dispositivos (requer Código de Verificação).</p>
+        </li>
+        <li>
+            <a href="{% url 'player_exibicao' %}">Visualizar Player em Loop (Teste)</a>
+            <p>Tela de exibição final da mídia em loop.</p>
+        </li>
+    </ul>
+</body>
+</html>

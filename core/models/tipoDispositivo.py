@@ -1,12 +1,14 @@
-from enum import Enum
+# core/models/tipoDispositivo.py
 from django.db import models
 
 class TipoDispositivo(models.Model):
+    # O Django gerencia o ID automaticamente
+    nome = models.CharField(max_length=255, verbose_name="Nome do Tipo")
 
-    id = models.AutoField(db_column="Id_Tipo_Dispositivo", primary_key=True)
-    nome = models.CharField(db_column="Nome", max_length=255)
-
+    def __str__(self):
+        return self.nome
+    
     class Meta:
-        db_table = 'tipos_dispositivo'
-        managed = False
-
+        verbose_name_plural = 'Tipos de Dispositivo'
+        # O Django agora CRIA esta tabela no SQLite
+        # managed = True (comportamento padrão)

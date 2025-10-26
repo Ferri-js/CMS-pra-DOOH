@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Acesso ao Painel</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f0f0f0; }
+        .login-box { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+            width: 350px; 
+            text-align: center;
+        }
+        h2 { color: #333; margin-bottom: 20px; }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            background-color: #007bff; 
+            color: white;
+            padding: 10px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .errorlist { list-style: none; color: red; padding: 0; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="login-box">
+        <h2>Acesso ao NEXXO CMS</h2>
+        
+        {% if form.errors %}
+            <ul class="errorlist">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="POST" action="{% url 'tela_login' %}">
+            {% csrf_token %}  {{ form.as_p }}
+            
+            <button type="submit">Entrar</button>
+            
+            <p style="margin-top: 20px; font-size: 0.9em;"><a href="{% url 'verificacao' %}">Sou um Dispositivo (Verificação)</a></p>
+        </form>
+    </div>
+
+</body>
+</html>
