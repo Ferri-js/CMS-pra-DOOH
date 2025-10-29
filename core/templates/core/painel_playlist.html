@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <title>Painel de Gerenciamento de Mídia</title>
+    <title>Painel de Gerenciamento de Playlists</title>
     
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     
@@ -36,24 +36,23 @@
 </head>
 <body>
 
-    <h1>Painel de Gerenciamento de Mídia</h1>
+    <h1>Painel de Gerenciamento de Playlists</h1>
 
     <div class="form-container">
-        <h2>Adicionar Nova Mídia</h2>
+        <h2>Adicionar Nova Playlists</h2>
         <form method="POST" 
-              enctype="multipart/form-data"
-              hx-post="{% url 'gerenciar_midia' %}"           
-              hx-target="#lista-midias"                   
+              hx-post="{% url 'gerenciar_play' %}"           
+              hx-target="#lista-playlists"                   
               hx-swap="innerHTML" 
-              hx-on--after-request="this.reset()"> 
+              hx-on:after-request="this.reset()">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit">Salvar Mídia</button>
+            <button type="submit">Cadastrar Playlist</button>
         </form>
     </div>
 
-    <div id="lista-midias">
-        {% include "core/partials/midia_list.html" %}
+    <div id="lista-playlists">
+        {% include "core/partials/playlist_list.html" %}
     </div>
 
 </body>

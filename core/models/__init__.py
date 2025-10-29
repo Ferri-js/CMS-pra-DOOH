@@ -8,3 +8,7 @@ from .playlist import Playlist
 from .tipoDispositivo import TipoDispositivo 
 
 from .midia_playlist import Midia_Playlist
+
+from .dispositivo import Dispositivo
+
+from .disp_playlist import Dispositivo_Playlist

@@ -2,7 +2,7 @@ import uuid
 import time
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from core.models import Midia, Playlist
+from core.models import Midia
 from core.forms import MidiaForm
 from supabase import create_client
 

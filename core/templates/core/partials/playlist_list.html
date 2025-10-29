@@ -1,0 +1,21 @@
+{% if playlists %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background-color: #f2f2f2;">
+                <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Título</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for playlist in playlists %}
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd;">{{ playlist.nomePlaylist }}</td>
+                 <td style="padding: 8px; border: 1px solid #ddd;">
+                    <a href="{% url 'gerenciar_mp' playlist.idPlaylist %}" data-playlist-id="{{ playlist.idPlaylist }}">Associar Mídias</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Nenhuma playlist cadastrada ainda.</p>
+{% endif %}

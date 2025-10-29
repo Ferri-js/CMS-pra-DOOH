@@ -64,14 +64,14 @@ midia4 = Midia(
 tipoDisp = TipoDispositivo.objects.get(id=1)
 
 disp = Dispositivo(
-    nomeDispositivo='Dispositivo Back end e Front end integrado',
+    nomeDispositivo='Teste deploy',
     status = tipoStatus.ATIVO.value,
-    codVerificacao= 'nextage',
+    codVerificacao= 'deploy',
     tipoDispositivo = tipoDisp
 )
 
 play = Playlist(
-    nomePlaylist='playlist teste frontend'
+    nomePlaylist='playlist deploy'
 )
 
 

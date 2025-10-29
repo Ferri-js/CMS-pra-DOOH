@@ -9,3 +9,6 @@ class TipoDispositivo(models.Model):
         db_table = 'tipos_dispositivo'
         managed = False
 
+    def __str__(self):
+        return self.nome         
+
