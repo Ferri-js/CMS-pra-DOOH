@@ -6,4 +6,7 @@ class tipoFormato(models.Model):
 
     class Meta:
         db_table = 'tipos_midia'
-        managed = False  # se a tabela já existe no banco e você não quer que o Django a modifique    
+        managed = False  # se a tabela já existe no banco e você não quer que o Django a modifique  
+
+    def __str__(self):
+        return self.nome      

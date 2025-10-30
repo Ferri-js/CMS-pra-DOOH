@@ -105,7 +105,7 @@ WSGI_APPLICATION = 'nexxo_cms.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'db',              # Nome do banco
+        'NAME': 'nexxo_local',              # Nome do banco
         'USER': 'root',            # Usuário do banco
         'PASSWORD': 'root',        # Senha
         'HOST': 'localhost',       # Host (ou IP)
@@ -115,6 +115,17 @@ DATABASES = {
         },
     }
 }
+
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.mysql',
+#        'NAME': 'DanielTeles$db',     # veja o nome exato no painel
+#        'USER': 'DanielTeles',                 # seu usuário PythonAnywhere
+#        'PASSWORD': 'Yoshipoggers3,',         # a senha que você definiu
+#        'HOST': 'DanielTeles.mysql.pythonanywhere-services.com',
+#        'PORT': '3306',
+#    }
+#}
 
 
 

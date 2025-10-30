@@ -1,0 +1,20 @@
+{% if disps_playlists %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background-color: #f2f2f2;">
+                <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Título</th>
+                <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Ordem de exibição</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for disp_play in disps_playlists %}
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd;">{{ disp_play.id_playlist.nomePlaylist }}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{{ disp_play.ordem_playlist }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Nenhuma playlist associada ainda.</p>
+{% endif %}

@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Associar Mídia à Playlist</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background-color: #f7f7f7; }
+        .form-container { background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        h1, h2 { color: #333; }
+        button { background-color: #4CAF50; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        #modal { display: none; position: fixed; top: 0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        #modal-content { background: #fff; margin: 10% auto; padding: 20px; width: 50%; border-radius: 8px; max-height: 60%; overflow-y: auto; }
+        .midia-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #ddd; display: block; }
+        .midia-item:hover { background-color: #f0f0f0; }
+        .selected-midias table { width: 100%; border-collapse: collapse; }
+        .selected-midias th, .selected-midias td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+        .selected-midias th { background-color: #f2f2f2; }
+        input[type="number"] { width: 60px; text-align: center; }
+        #lista-midias table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        #lista-midias th, #lista-midias td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+        #lista-midias th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>Associar Mídia à Playlist</h1>
+
+<div class="form-container">
+    <h2>Playlist: {{ playlist.nomePlaylist }}</h2>
+
+    <!-- Formulário principal com htmx -->
+    <form id="form-principal" method="POST" 
+          action="{% url 'gerenciar_mp' playlist.idPlaylist %}" 
+          hx-post="{% url 'gerenciar_mp' playlist.idPlaylist %}" 
+          hx-target="#lista-midias" 
+          hx-swap="innerHTML">
+
+        {% csrf_token %}
+
+        <!-- Botão que abre o modal -->
+        <button type="button" onclick="document.getElementById('modal').style.display='block'">Selecionar Mídia</button>
+
+        <!-- Modal para seleção de mídias -->
+        <div id="modal">
+            <div id="modal-content">
+                <h2>Selecione uma Mídia</h2>
+                {% for midia in midias %}
+                    <label class="midia-item">
+                        <input type="checkbox" value="{{ midia.id }}" data-titulo="{{ midia.titulo }}">
+                        {{ midia.titulo }}
+                    </label>
+                {% endfor %}
+                <div style="margin-top:10px; display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" onclick="document.getElementById('modal').style.display='none'">Cancelar</button>
+                    <button type="button" id="confirm-selection">Confirmar Seleção</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de mídias selecionadas para associação -->
+        <div class="selected-midias">
+            <h3>Mídias a serem associadas</h3>
+            <div id="midias-selecionadas">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Ordem de exibição</th>
+                        </tr>
+                    </thead>
+                    <tbody id="midias-selecionadas-tbody">
+                        <!-- Preenchido pelo JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Botão principal para salvar alterações -->
+        <button type="submit" style="margin-top: 15px;">Salvar Alterações</button>
+
+        <!-- Lista de mídias já associadas (atualizada via htmx) -->
+        <div id="lista-midias" style="margin-top:20px;">
+            {% include "core/partials/midia_playlist_list.html" %}
+        </div>
+
+    </form>
+</div>
+
+<script src="{% static 'associar/associar_midias.js' %}"></script>
+
+</body>
+</html>
