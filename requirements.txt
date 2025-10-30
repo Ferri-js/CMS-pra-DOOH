@@ -14,3 +14,5 @@ requests-toolbelt
 setuptools
 wheel
 supabase
+djangorestframework
+djangorestframework-simplejwt

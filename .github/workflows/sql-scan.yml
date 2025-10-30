@@ -1,0 +1,23 @@
+name: SQL Scan
+
+on:
+  push:
+    branches: [ main, Branch_2 ]
+  pull_request:
+    branches: [ main, Branch_2 ]
+
+jobs:
+  sql-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run SQL scanner
+        run: |
+          python tools/sql_scan.py
