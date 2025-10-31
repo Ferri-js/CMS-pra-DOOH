@@ -15,7 +15,7 @@ Projeto desenvolvido como parte do **First Steps** da **PUC TECH** - Liga Acadê
 -  **Gerenciamento de Dispositivos** - Cadastro e controle de telas e dispositivos DOOH
 -  **Gestão de Mídias** - Upload e organização de vídeos, imagens e conteúdo multimídia
 -  **Playlists Inteligentes** - Criação e agendamento de playlists para exibição
--  **Integração pCloud** - Armazenamento em nuvem para mídias
+-  **Integração supabase** - Armazenamento em nuvem para mídias
   
 ---
 
@@ -24,7 +24,7 @@ Projeto desenvolvido como parte do **First Steps** da **PUC TECH** - Liga Acadê
 - **Backend:** Django
 - **Banco de Dados:** MySQL
 - **ORM:** Django ORM
-- **Cloud Storage:** pCloud API
+- **Cloud Storage:** supabase API
 - **Frontend:** Django Templates (HTML + HTMX)
 
 ---
