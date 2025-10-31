@@ -1,0 +1,20 @@
+<h4 style="margin-top: 0;">Itens Atuais (Em Ordem)</h4>
+<ul class="item-list" id="sortable-list"> {% for item in itens_da_playlist %}
+        <li data-item-id="{{ item.id }}">
+            <span>
+                <strong>{{ item.ordem }}.</strong> 
+                {{ item.midia.titulo }} 
+                <small>({{ item.midia.get_tipo_display }})</small>
+            </span>
+            <a href="#" class="btn-danger"
+               hx-get="{% url 'remover_item_playlist' item.id %}" 
+               hx-target="#lista-itens-playlist"
+               hx-swap="innerHTML"
+               hx-confirm="Tem certeza que deseja remover este item?">
+                Remover
+            </a>
+        </li>
+    {% empty %}
+        <li style="background: none; border: none; color: #777;">Esta playlist está vazia. Adicione mídias usando o formulário acima.</li>
+    {% endfor %}
+</ul>

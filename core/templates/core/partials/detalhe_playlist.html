@@ -1,0 +1,19 @@
+<div id="detalhe-playlist-container">
+    <h3>Editando: {{ playlist.titulo }}</h3>
+    
+    <div class="form-container" style="background-color: #fdfdfd; padding: 15px; border: 1px solid #eee; border-radius: 5px;">
+        <h4>Adicionar Mídia à Playlist</h4>
+        <form hx-post="{% url 'adicionar_item_playlist' playlist.id %}"
+              hx-target="#detalhe-playlist-container" 
+              hx-swap="innerHTML"
+              hx-on--after-request="this.reset()">
+            {% csrf_token %}
+            {{ form_item.as_p }}
+            <button type="submit" class="btn">Adicionar Mídia</button>
+        </form>
+    </div>
+    
+    <div id="lista-itens-playlist" style="margin-top: 20px;">
+        {% include "core/partials/playlist_itens_list.html" %}
+    </div>
+</div>

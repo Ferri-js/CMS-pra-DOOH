@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <title>Painel de Gerenciamento - NEXXO CMS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
+        h1, h2, h3, h4 { color: #222; font-weight: 600; }
+        h1 { text-align: center; margin-bottom: 20px; color: #0056b3; }
+        h2 { color: #007bff; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top: 0; font-size: 1.5rem; }
+        h3 { margin-top: 0; }
+        h4 { margin-top: 0; color: #333; }
+
+        .header-bar { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto 20px auto; padding: 10px 20px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-radius: 8px; }
+        .header-bar .links a { text-decoration: none; color: #007bff; font-weight: bold; margin-left: 20px; }
+        .header-bar .links a.logout { color: #dc3545; }
+        
+        /* Layout principal */
+        .main-container { max-width: 1400px; margin: auto; }
+        
+        /* 3 Colunas Superiores */
+        .top-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; } /* 3 colunas iguais */
+        
+        /* Coluna Inferior (Itens da Playlist) */
+        .bottom-section { margin-top: 20px; }
+
+        .column { background: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+        .col-header { padding: 20px; border-bottom: 1px solid #eee; }
+        /* Adicionando rolagem interna se a lista crescer */
+        .col-content { padding: 20px; overflow-y: auto; flex-grow: 1; min-height: 300px; max-height: 60vh; }
+        .col-footer { padding: 20px; border-top: 1px solid #eee; background-color: #fdfdfd; }
+
+        /* Estilos do Formulário */
+        .form-container p { margin-bottom: 15px; }
+        .form-container label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 0.9em; color: #555; }
+        .form-control {
+            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; margin-bottom: 10px;
+        }
+        .form-check-input {
+            width: auto; margin-right: 5px; accent-color: #007bff;
+        }
+        /* Ajuste específico para Checkbox */
+        .form-container p:has(input[type="checkbox"]) { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            flex-direction: row-reverse; 
+            justify-content: flex-end; 
+            margin-bottom: 10px;
+        }
+        .form-container p:has(input[type="checkbox"]) label {
+            margin-bottom: 0; /* Remove a margem extra do label do checkbox */
+        }
+
+        button[type="submit"], .btn {
+            background-color: #007bff; color: white; padding: 10px 15px; border: none;
+            border-radius: 4px; cursor: pointer; font-size: 1rem; transition: background-color 0.3s ease;
+            text-decoration: none; display: inline-block; width: 100%; box-sizing: border-box; text-align: center;
+        }
+        button[type="submit"]:hover, .btn:hover { background-color: #0056b3; }
+        .btn-success { background-color: #28a745; }
+        .btn-success:hover { background-color: #218838; }
+        .btn-danger { color: #dc3545; text-decoration: none; font-weight: bold; cursor: pointer; font-size: 1.1em; padding: 5px; }
+        .btn-danger:hover { color: #c82333; }
+        .btn-secondary { background-color: #6c757d; margin-top: 10px; }
+        .btn-secondary:hover { background-color: #5a6268; }
+
+        /* Listas */
+        .item-list { list-style: none; padding: 0; margin: 0; }
+        .item-list li {
+            padding: 10px; border-bottom: 1px solid #eee;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .item-list li:hover { background-color: #f0f8ff; }
+        .item-list li a { font-weight: bold; text-decoration: none; color: #007bff; cursor: pointer; }
+        .item-list li a:hover { text-decoration: underline; }
+        .status-ativa { font-size: 0.8em; color: #28a745; font-weight: bold; }
+        .status-inativa { font-size: 0.8em; color: #aaa; }
+        
+        /* Mensagens (para HTMX) */
+        #messages-container { min-height: 50px; }
+        .messages { list-style: none; padding: 0; margin-bottom: 15px; }
+        .messages li { padding: 12px; border-radius: 4px; margin-bottom: 10px; font-weight: 500; }
+        .messages li.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .messages li.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .messages li.info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+    </style>
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'> 
+
+    <div class="header-bar">
+        <h1>NEXXO CMS</h1>
+        <div class="links">
+            <span>Olá, {{ request.user.username }}!</span>
+            <a href="{% url 'home' %}">Dashboard Inicial</a>
+            <a href="{% url 'logout' %}" class="logout">Sair</a>
+        </div>
+    </div>
+
+    <div id="messages-container" style="max-width: 1400px; margin: 0 auto 15px auto;">
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+
+    <div class="main-container">
+        
+        <div class="top-grid">
+            
+            <div class="column" id="midia-column">
+                <div class="col-header">
+                    <h2>1. Acervo de Mídias</h2>
+                </div>
+                <div class="col-content" id="midia-list-target"
+                     hx-get="{% url 'lista_midias' %}" 
+                     hx-trigger="load, midia-atualizada from:body"> <p>Carregando acervo...</p>
+                </div>
+                <div class="col-footer form-container">
+                    <h4>Adicionar Nova Mídia</h4>
+                    <form hx-post="{% url 'upload_midia' %}"
+                          hx-target="#midia-list-target"
+                          hx-swap="innerHTML"
+                          hx-on--after-request="this.reset(); htmx.trigger('body', 'midia-atualizada')"
+                          enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form_midia.as_p }}
+                        <button type="submit" name="submit_midia" class="btn btn-success">Adicionar Mídia</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="column" id="playlist-column">
+                <div class="col-header">
+                    <h2>2. Playlists</h2>
+                </div>
+                <div class="col-content" id="playlist-list-target"
+                     hx-get="{% url 'lista_playlists' %}"
+                     hx-trigger="load, playlist-atualizada from:body, dispositivo-atualizado from:body">
+                     <p>Carregando playlists...</p>
+                </div>
+            </div>
+            
+            <div class="column" id="dispositivo-column">
+                <div class="col-header">
+                    <h2>3. Dispositivos</h2>
+                </div>
+                <div class="col-content" id="dispositivo-list-target"
+                     hx-get="{% url 'lista_dispositivos' %}"
+                     hx-trigger="load, dispositivo-atualizado from:body, playlist-atualizada from:body">
+                     <p>Carregando dispositivos...</p>
+                </div>
+            </div>
+        </div> <div class="bottom-section column" id="playlist-detail-column" style="margin-top: 20px;">
+            <div class="col-header">
+                <h2>4. Itens da Playlist (Editar)</h2>
+            </div>
+            <div class="col-content" id="detalhe-playlist-container" style="max-height: none;">
+                <p style="color: #666; text-align: center; padding: 40px 0;">
+                    Selecione uma playlist na coluna "Playlists" para ver e adicionar mídias.
+                </p>
+            </div>
+        </div>
+
+    </div> </body>
+</html>

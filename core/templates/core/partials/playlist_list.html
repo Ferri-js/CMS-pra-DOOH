@@ -1,0 +1,31 @@
+<div class="form-container" style="padding: 0 0 20px 0; border-bottom: 1px solid #eee;">
+    <form hx-post="{% url 'criar_playlist' %}"
+          hx-target="#playlist-list-target"
+          hx-swap="innerHTML"
+          hx-on--after-request="this.reset()">
+        {% csrf_token %}
+        {{ form_playlist.as_p }}
+        <button type="submit" class="btn btn-success">Criar Nova Playlist</button>
+    </form>
+</div>
+
+<h3 style="margin-top: 20px;">Playlists Salvas</h3>
+<ul class="item-list">
+    {% for playlist in playlists %}
+    <li>
+        <a hx-get="{% url 'detalhe_playlist' playlist.id %}"
+           hx-target="#detalhe-playlist-container"
+           hx-swap="innerHTML">
+            {{ playlist.titulo }}
+        </a>
+        
+        {% if playlist.ativa %}
+            <span class="status-ativa">ATIVA</span>
+        {% else %}
+            <span class="status-inativa">Inativa</span>
+        {% endif %}
+    </li>
+    {% empty %}
+    <li>Nenhuma playlist criada.</li>
+    {% endfor %}
+</ul>

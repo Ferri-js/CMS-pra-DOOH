@@ -1,0 +1,27 @@
+<div class="form-container" style="padding: 0 0 20px 0; border-bottom: 1px solid #eee;" id="dispositivo-form-container">
+    <h4>Adicionar Novo Dispositivo</h4>
+    <form hx-post="{% url 'criar_dispositivo' %}"
+          hx-target="#dispositivo-list-target"
+          hx-swap="innerHTML"
+          hx-on--after-request="this.reset()">
+        {% csrf_token %}
+        {{ form_dispositivo.as_p }}
+        <button type="submit" class="btn btn-success">Adicionar Dispositivo</button>
+    </form>
+</div>
+
+<h3 style="margin-top: 20px;">Dispositivos Salvos</h3>
+<ul class="item-list">
+    {% for dispositivo in dispositivos %}
+    <li>
+        <a hx-get="{% url 'detalhe_dispositivo' dispositivo.id %}"
+           hx-target="#dispositivo-form-container"
+           hx-swap="innerHTML">
+            {{ dispositivo.nomeDispositivo }}
+        </a>
+        <small style="color: #6c757d;">(Playlist: {{ dispositivo.playlistAssociada.titulo|default:"Nenhuma" }})</small>
+    </li>
+    {% empty %}
+    <li>Nenhum dispositivo cadastrado.</li>
+    {% endfor %}
+</ul>

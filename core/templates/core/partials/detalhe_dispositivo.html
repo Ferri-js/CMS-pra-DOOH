@@ -1,0 +1,17 @@
+<form hx-post="{% url 'editar_dispositivo' dispositivo.id %}"
+      hx-target="#dispositivo-list-target"
+      hx-swap="innerHTML">
+    {% csrf_token %}
+    <h4>Editando: {{ dispositivo.nomeDispositivo }}</h4>
+    
+    {{ form_dispositivo.as_p }}
+    
+    <button type="submit" class="btn btn-success">Salvar Alterações</button>
+    
+    <a hx-get="{% url 'lista_dispositivos' %}"
+       hx-target="#dispositivo-list-target"
+       hx-swap="innerHTML"
+       class="btn btn-secondary" style="cursor: pointer;">
+        Cancelar
+    </a>
+</form>
